@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAFA;
+  --card-bg: #FFFFFF;
+  --primary: #1A1A1A;
+  --accent: #C9A87C;
+  --secondary: #6B7280;
+  --success: #22C55E;
+  --error: #EF4444;
+  --border: #E5E7EB;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: var(--background);
+  color: var(--primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 14px;
+}
