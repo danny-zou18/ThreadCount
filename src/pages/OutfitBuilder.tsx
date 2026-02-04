@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ChevronLeft, ChevronRight, Sparkles, Save, Shuffle, Shirt, X, Search } from 'lucide-react';
@@ -47,6 +47,65 @@ export const OutfitBuilder: React.FC = () => {
   const [selectedWardrobeCategory, setSelectedWardrobeCategory] = useState<'tops' | 'bottoms' | 'shoes' | 'accessories'>('tops');
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast } = useToast();
+
+  // Dynamic sizing based on viewport
+  const [garmentSizes, setGarmentSizes] = useState({
+    hat: { width: 120, height: 100 },
+    tops: { width: 200, height: 200 },
+    bottoms: { width: 200, height: 160 },
+    footwear: { width: 140, height: 110 },
+  });
+
+  // Calculate dynamic sizes based on viewport
+  useEffect(() => {
+    const calculateSizes = () => {
+      // Base calculation on viewport width and height
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      
+      // Account for all UI chrome:
+      // - Header: 64px (pt-16)
+      // - Main padding: 48px (p-6 top+bottom)
+      // - Action bar height: ~70px
+      // - Help text height: ~40px
+      // - Card padding: 64px (p-8 x2)
+      // - Inner canvas padding: 64px (p-8 x2)
+      // - Gaps and margins: ~40px
+      const uiChrome = 64 + 48 + 70 + 40 + 64 + 64 + 40; // Total: ~390px
+      const availableHeight = vh - uiChrome;
+      
+      // Use a scaling factor based on viewport dimensions
+      // For 7-column canvas (58.33% of viewport), calculate available space
+      const canvasWidth = vw * 0.5; // Approximate available width
+      const scaleFactor = Math.min(canvasWidth / 700, availableHeight / 600); // Scale relative to available space
+      
+      // Clamp scale factor to reasonable bounds (smaller min for smaller screens)
+      const clampedScale = Math.max(0.4, Math.min(scaleFactor, 1.0));
+      
+      setGarmentSizes({
+        hat: { 
+          width: Math.round(120 * clampedScale), 
+          height: Math.round(100 * clampedScale) 
+        },
+        tops: { 
+          width: Math.round(200 * clampedScale), 
+          height: Math.round(200 * clampedScale) 
+        },
+        bottoms: { 
+          width: Math.round(200 * clampedScale), 
+          height: Math.round(160 * clampedScale) 
+        },
+        footwear: { 
+          width: Math.round(140 * clampedScale), 
+          height: Math.round(110 * clampedScale) 
+        },
+      });
+    };
+
+    calculateSizes();
+    window.addEventListener('resize', calculateSizes);
+    return () => window.removeEventListener('resize', calculateSizes);
+  }, []);
 
   // Group items by category
   const itemsByCategory = {
@@ -510,12 +569,12 @@ export const OutfitBuilder: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="max-h-screen overflow-hidden flex flex-col">
       {/* Main Layout: Canvas (left) + Wardrobe Panel (right) */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
         {/* Canvas - Left Side */}
-        <div className="col-span-7">
-          <Card className="p-8 relative">
+        <div className="col-span-7 flex flex-col min-h-0">
+          <Card className="p-8 relative flex-1 flex flex-col min-h-0">
             {/* Shuffle Button - Bottom Left */}
             <button
               onClick={shuffleAll}
@@ -525,7 +584,7 @@ export const OutfitBuilder: React.FC = () => {
               <Shuffle size={20} />
             </button>
 
-            <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg p-8 min-h-[700px] flex items-center justify-center">
+            <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg p-8 flex items-center justify-center flex-1 overflow-auto">
               <div className="flex flex-col items-center gap-6 w-full">
                 {/* Hat Slot */}
                 <div className="flex flex-col items-center gap-2">
@@ -534,7 +593,7 @@ export const OutfitBuilder: React.FC = () => {
                     item={outfit.hat}
                     label="Hat"
                     onRemove={() => removeItem('hat')}
-                    size={{ width: 120, height: 100 }}
+                    size={garmentSizes.hat}
                   />
                 </div>
 
@@ -547,7 +606,7 @@ export const OutfitBuilder: React.FC = () => {
                         <ChevronLeft size={20} />
                       </button>
                       <div className="flex flex-col items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300"
-                        style={{ width: '200px', height: '200px' }}>
+                        style={{ width: `${garmentSizes.tops.width}px`, height: `${garmentSizes.tops.height}px` }}>
                         <Shirt size={40} className="text-gray-300 mb-2" />
                         <p className="text-xs text-gray-400">No items</p>
                       </div>
@@ -556,14 +615,14 @@ export const OutfitBuilder: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <OutfitSlot category="tops" label="Upper Body" size={{ width: 200, height: 200 }} />
+                    <OutfitSlot category="tops" label="Upper Body" size={garmentSizes.tops} />
                   )}
                 </div>
 
                 {/* Bottoms Slot */}
                 <div className="flex flex-col items-center gap-2">
                   <p className="text-xs font-medium text-[var(--secondary)]">Bottoms & Belts</p>
-                  <OutfitSlot category="bottoms" label="Bottoms" size={{ width: 200, height: 160 }} />
+                  <OutfitSlot category="bottoms" label="Bottoms" size={garmentSizes.bottoms} />
                 </div>
 
                 {/* Shoes + Socks Slot */}
@@ -575,7 +634,7 @@ export const OutfitBuilder: React.FC = () => {
                         <ChevronLeft size={20} />
                       </button>
                       <div className="flex flex-col items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300"
-                        style={{ width: '140px', height: '110px' }}>
+                        style={{ width: `${garmentSizes.footwear.width}px`, height: `${garmentSizes.footwear.height}px` }}>
                         <Shirt size={40} className="text-gray-300 mb-2" />
                         <p className="text-xs text-gray-400">No footwear</p>
                       </div>
@@ -584,7 +643,7 @@ export const OutfitBuilder: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <OutfitSlot category="shoes" label="Shoes & Socks" size={{ width: 140, height: 110 }} />
+                    <OutfitSlot category="shoes" label="Shoes & Socks" size={garmentSizes.footwear} />
                   )}
                 </div>
               </div>
@@ -592,7 +651,7 @@ export const OutfitBuilder: React.FC = () => {
           </Card>
 
           {/* Bottom Action Bar */}
-          <div className="mt-4 bg-white rounded-xl border border-[var(--border)] p-4">
+          <div className="mt-4 bg-white rounded-xl border border-[var(--border)] p-4 flex-shrink-0">
             <div className="flex items-center gap-4">
               <input
                 type="text"
@@ -614,12 +673,12 @@ export const OutfitBuilder: React.FC = () => {
         </div>
 
         {/* Wardrobe Panel - Right Side */}
-        <div className="col-span-5">
-          <Card className="p-6 h-full">
-            <h3 className="mb-4">My Wardrobe</h3>
+        <div className="col-span-5 flex flex-col min-h-0">
+          <Card className="p-6 flex flex-col flex-1 min-h-0">
+            <h3 className="mb-4 flex-shrink-0">My Wardrobe</h3>
 
             {/* Category Tabs */}
-            <div className="flex gap-2 mb-4 flex-wrap">
+            <div className="flex gap-2 mb-4 flex-wrap flex-shrink-0">
               {(['tops', 'bottoms', 'shoes', 'accessories'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -636,7 +695,7 @@ export const OutfitBuilder: React.FC = () => {
             </div>
 
             {/* Search */}
-            <div className="relative mb-4">
+            <div className="relative mb-4 flex-shrink-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--secondary)]" size={16} />
               <input
                 type="text"
@@ -648,7 +707,7 @@ export const OutfitBuilder: React.FC = () => {
             </div>
 
             {/* Items Grid */}
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 340px)' }}>
+            <div className="overflow-y-auto flex-1 min-h-0">
               {filteredWardrobeItems.length > 0 ? (
                 <div className="grid grid-cols-2 gap-3">
                   {filteredWardrobeItems.map((item) => (
@@ -661,6 +720,7 @@ export const OutfitBuilder: React.FC = () => {
                         src={item.imageUrl}
                         alt={item.name}
                         className="w-full h-28 object-contain mb-2"
+                        style={{ maxHeight: '7rem' }}
                       />
                       <p className="text-xs line-clamp-2 group-hover:text-[var(--accent)]">
                         {item.name}
@@ -680,7 +740,7 @@ export const OutfitBuilder: React.FC = () => {
       </div>
 
       {/* Help Text */}
-      <div className="mt-4 text-center">
+      <div className="mt-4 text-center flex-shrink-0">
         <p className="text-sm text-[var(--secondary)]">
           Flatlay layout: Hats → Upper body (max 2) → Bottoms → Footwear (max 2) • Use arrows to cycle • Click to add from wardrobe
         </p>

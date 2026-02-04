@@ -39,6 +39,7 @@ export const ReplaceFootwearModal: React.FC<ReplaceFootwearModalProps> = ({
                 src={item.imageUrl}
                 alt={item.name}
                 className="w-full h-32 object-contain mb-3"
+                style={{ maxHeight: '8rem' }}
               />
               <p className="text-sm font-medium text-center mb-1 group-hover:text-[var(--accent)]">
                 {item.name}

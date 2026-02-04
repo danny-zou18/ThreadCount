@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Upload } from 'lucide-react';
+import { Upload, Camera, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
+import { removeBackground } from '@imgly/background-removal';
 
 interface AddItemModalProps {
   isOpen: boolean;

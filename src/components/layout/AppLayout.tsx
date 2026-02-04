@@ -35,10 +35,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         setSidebarVisible={setSidebarVisible}
       />
       <main
-        className="pt-16 min-h-screen transition-all"
+        className="pt-16 h-screen transition-all overflow-hidden"
         style={{ marginLeft: sidebarVisible ? (sidebarCollapsed ? 64 : 240) : 0 }}
       >
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto p-6 h-full flex flex-col">
           {children}
         </div>
       </main>
