@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Upload, Camera, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import imageCompression from 'browser-image-compression';
-import { removeBackground } from '@imgly/background-removal';
+import { processGarmentImage, formatFileSize, getCompressionRatio } from '../../utils/imageProcessing';
 
 interface AddItemModalProps {
   isOpen: boolean;
@@ -13,7 +12,12 @@ interface AddItemModalProps {
 
 export const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onAdd }) => {
   const [step, setStep] = useState(1);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState<'upload' | 'removing-bg' | 'compressing' | 'complete'>('upload');
+  const [error, setError] = useState<string | null>(null);
+  const [fileSizes, setFileSizes] = useState<{ original: number; final: number } | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     category: 'tops',
@@ -22,30 +26,79 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onA
     tags: '',
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File size must be less than 10MB. Please choose a smaller image.');
+      return;
+    }
+
+    setError(null);
+    setIsProcessing(true);
+    setProcessingStage('upload');
+
+    try {
+      // Read original image for preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setStep(2);
+        setOriginalImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Process image: remove background and compress
+      setProcessingStage('removing-bg');
+      const { dataUrl, originalSize, finalSize } = await processGarmentImage(file);
+      
+      setProcessedImage(dataUrl);
+      setFileSizes({ original: originalSize, final: finalSize });
+      setProcessingStage('complete');
+      setIsProcessing(false);
+      setStep(2);
+    } catch (err) {
+      console.error('Image processing error:', err);
+      setError('Failed to process image. Please try another image or check your internet connection.');
+      setIsProcessing(false);
     }
   };
 
   const handleSubmit = () => {
+    // Validate required fields
+    if (!formData.name.trim()) {
+      setError('Please enter a name for the item');
+      return;
+    }
+    
+    if (!processedImage && !originalImage) {
+      setError('Please upload an image');
+      return;
+    }
+
     onAdd({
       ...formData,
-      imageUrl: imagePreview || 'https://via.placeholder.com/400',
+      imageUrl: processedImage || originalImage || 'https://via.placeholder.com/400',
       id: Math.random().toString(36).substr(2, 9),
       usageCount: 0,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
     });
+    handleClose();
+  };
+
+  const handleClose = () => {
     onClose();
-    setStep(1);
-    setImagePreview(null);
-    setFormData({ name: '', category: 'tops', colors: [], season: [], tags: '' });
+    // Reset state after modal close animation
+    setTimeout(() => {
+      setStep(1);
+      setOriginalImage(null);
+      setProcessedImage(null);
+      setIsProcessing(false);
+      setProcessingStage('upload');
+      setError(null);
+      setFileSizes(null);
+      setFormData({ name: '', category: 'tops', colors: [], season: [], tags: '' });
+    }, 300);
   };
 
   const colorOptions = [
@@ -61,38 +114,123 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onA
   const seasons = ['spring', 'summer', 'fall', 'winter'];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Item" size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Add New Item" size="lg">
       <div className="p-6">
         {step === 1 ? (
-          <div>
+          <div className="space-y-6">
+            {/* Instructions */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex gap-3">
+                <Camera className="text-blue-600 flex-shrink-0" size={24} />
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">Photo Tips</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Lay garment flat on a solid-colored surface</li>
+                    <li>• Take photo from directly above (bird's eye view)</li>
+                    <li>• Ensure good lighting with minimal shadows</li>
+                    <li>• Fill the frame with the garment</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Area */}
             <label
               htmlFor="file-upload"
-              className="border-2 border-dashed border-[var(--border)] rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer hover:border-[var(--accent)] transition-colors"
+              className={`border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                isProcessing 
+                  ? 'border-gray-300 bg-gray-50 cursor-not-allowed' 
+                  : 'border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5'
+              }`}
             >
-              <Upload size={48} className="text-[var(--secondary)] mb-4" />
-              <p className="font-medium mb-1">Drag and drop or click to upload</p>
-              <p className="text-sm text-[var(--secondary)]">PNG, JPG up to 10MB</p>
+              {isProcessing ? (
+                <div className="text-center">
+                  <Loader2 size={48} className="text-[var(--accent)] mb-4 animate-spin mx-auto" />
+                  <p className="font-medium mb-2">Processing your image...</p>
+                  <p className="text-sm text-[var(--secondary)]">
+                    {processingStage === 'removing-bg' && 'Removing background...'}
+                    {processingStage === 'compressing' && 'Optimizing image size...'}
+                    {processingStage === 'upload' && 'Uploading...'}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Upload size={48} className="text-[var(--secondary)] mb-4" />
+                  <p className="font-medium mb-1">Drag and drop or click to upload</p>
+                  <p className="text-sm text-[var(--secondary)]">PNG, JPG up to 10MB</p>
+                </>
+              )}
               <input
                 id="file-upload"
                 type="file"
                 accept="image/*"
+                capture="environment"
                 className="hidden"
                 onChange={handleImageUpload}
+                disabled={isProcessing}
               />
             </label>
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+                <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {/* Preview */}
             <div>
-              <p className="text-sm font-medium mb-2">Preview</p>
-              {imagePreview && (
-                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">Preview</p>
+                <div className="flex items-center gap-1 text-green-600">
+                  <CheckCircle size={16} />
+                  <span className="text-xs font-medium">Background Removed</span>
+                </div>
+              </div>
+              {processedImage && (
+                <div className="space-y-3">
+                  {/* Processed Image with Checkered Background */}
+                  <div 
+                    className="aspect-square rounded-lg overflow-hidden relative"
+                    style={{
+                      backgroundImage: 'linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)',
+                      backgroundSize: '20px 20px',
+                      backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+                    }}
+                  >
+                    <img 
+                      src={processedImage} 
+                      alt="Processed Preview" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  
+                  {/* File Size Info */}
+                  {fileSizes && (
+                    <div className="text-xs space-y-1">
+                      <div className="bg-green-50 border border-green-200 rounded p-2">
+                        <p className="font-medium text-green-900 mb-1">✓ Processing Complete</p>
+                        <div className="space-y-0.5 text-green-700">
+                          <p>• Background removed</p>
+                          <p>• Original size: {formatFileSize(fileSizes.original)}</p>
+                          <p>• Optimized size: {formatFileSize(fileSizes.final)}</p>
+                          <p className="font-medium">• Reduced by {getCompressionRatio(fileSizes.original, fileSizes.final)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               <button
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setStep(1);
+                  setOriginalImage(null);
+                  setProcessedImage(null);
+                  setError(null);
+                }}
                 className="text-sm text-[var(--accent)] mt-2 hover:underline"
               >
                 Change Image
@@ -102,13 +240,21 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onA
             {/* Form */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
+                <label className="block text-sm font-medium mb-1">
+                  Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (error && e.target.value.trim()) {
+                      setError(null);
+                    }
+                  }}
                   placeholder="e.g. White Cotton T-Shirt"
                   className="w-full px-3 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  required
                 />
               </div>
 
@@ -190,13 +336,25 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ isOpen, onClose, onA
           </div>
         )}
 
+        {/* Error Display (Step 2) */}
+        {step === 2 && error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 flex gap-2">
+            <AlertCircle className="text-red-600 flex-shrink-0" size={18} />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 mt-6 pt-6 border-t border-[var(--border)]">
-          <Button variant="ghost" onClick={onClose} className="flex-1">
+          <Button variant="ghost" onClick={handleClose} className="flex-1" disabled={isProcessing}>
             Cancel
           </Button>
           {step === 2 && (
-            <Button onClick={handleSubmit} className="flex-1">
+            <Button 
+              onClick={handleSubmit} 
+              className="flex-1" 
+              disabled={(!processedImage && !originalImage) || !formData.name.trim()}
+            >
               Add to Wardrobe
             </Button>
           )}

@@ -69,18 +69,29 @@ export const OutfitBuilder: React.FC = () => {
       // - Action bar height: ~70px
       // - Help text height: ~40px
       // - Card padding: 64px (p-8 x2)
-      // - Inner canvas padding: 64px (p-8 x2)
-      // - Gaps and margins: ~40px
-      const uiChrome = 64 + 48 + 70 + 40 + 64 + 64 + 40; // Total: ~390px
+      // - Inner canvas padding: 48px (p-6 x2)
+      // - Grid gaps: ~36px (gap-3 for 4 sections = 12px * 3)
+      // - Label heights: ~64px (4 labels + their gaps)
+      // - Margins: ~40px
+      const uiChrome = 64 + 48 + 70 + 40 + 64 + 48 + 36 + 64 + 40; // Total: ~474px
       const availableHeight = vh - uiChrome;
       
-      // Use a scaling factor based on viewport dimensions
-      // For 7-column canvas (58.33% of viewport), calculate available space
-      const canvasWidth = vw * 0.5; // Approximate available width
-      const scaleFactor = Math.min(canvasWidth / 700, availableHeight / 600); // Scale relative to available space
+      // Base garment heights that need to fit (without scaling)
+      // hat: 100, tops: 200, bottoms: 160, footwear: 110 = 570px total
+      const baseContentHeight = 100 + 200 + 160 + 110; // 570px
       
-      // Clamp scale factor to reasonable bounds (smaller min for smaller screens)
-      const clampedScale = Math.max(0.4, Math.min(scaleFactor, 1.0));
+      // Calculate scale factor to fit content in available height
+      const heightScale = availableHeight / baseContentHeight;
+      
+      // Also consider width constraints (7-column canvas ~58% of viewport)
+      const canvasWidth = vw * 0.5; // Approximate available width
+      const widthScale = canvasWidth / 700;
+      
+      // Use the more restrictive scale factor
+      const scaleFactor = Math.min(heightScale, widthScale);
+      
+      // Clamp scale factor to reasonable bounds
+      const clampedScale = Math.max(0.35, Math.min(scaleFactor, 1.0));
       
       setGarmentSizes({
         hat: { 
@@ -569,12 +580,12 @@ export const OutfitBuilder: React.FC = () => {
   };
 
   return (
-    <div className="max-h-screen overflow-hidden flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Main Layout: Canvas (left) + Wardrobe Panel (right) */}
-      <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+      <div className="grid grid-cols-12 gap-6 flex-1 overflow-hidden">
         {/* Canvas - Left Side */}
-        <div className="col-span-7 flex flex-col min-h-0">
-          <Card className="p-8 relative flex-1 flex flex-col min-h-0">
+        <div className="col-span-7 flex flex-col overflow-hidden">
+          <Card className="p-8 relative flex flex-col overflow-hidden" style={{ height: '100%' }}>
             {/* Shuffle Button - Bottom Left */}
             <button
               onClick={shuffleAll}
@@ -584,8 +595,8 @@ export const OutfitBuilder: React.FC = () => {
               <Shuffle size={20} />
             </button>
 
-            <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg p-8 flex items-center justify-center flex-1 overflow-auto">
-              <div className="flex flex-col items-center gap-6 w-full">
+            <div className="bg-gradient-to-b from-gray-50 to-gray-100 rounded-lg p-6 flex items-center justify-center flex-1 overflow-hidden">
+              <div className="flex flex-col items-center justify-center gap-3 w-full h-full">
                 {/* Hat Slot */}
                 <div className="flex flex-col items-center gap-2">
                   <p className="text-xs font-medium text-[var(--secondary)]">Hats & Glasses</p>
@@ -673,8 +684,8 @@ export const OutfitBuilder: React.FC = () => {
         </div>
 
         {/* Wardrobe Panel - Right Side */}
-        <div className="col-span-5 flex flex-col min-h-0">
-          <Card className="p-6 flex flex-col flex-1 min-h-0">
+        <div className="col-span-5 flex flex-col overflow-hidden">
+          <Card className="p-6 flex flex-col h-full overflow-hidden">
             <h3 className="mb-4 flex-shrink-0">My Wardrobe</h3>
 
             {/* Category Tabs */}
@@ -707,9 +718,9 @@ export const OutfitBuilder: React.FC = () => {
             </div>
 
             {/* Items Grid */}
-            <div className="overflow-y-auto flex-1 min-h-0">
+            <div className="overflow-y-auto flex-1 min-h-0 -mx-1 px-1" style={{ scrollbarGutter: 'stable' }}>
               {filteredWardrobeItems.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 pb-2">
                   {filteredWardrobeItems.map((item) => (
                     <button
                       key={item.id}

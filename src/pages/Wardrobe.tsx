@@ -40,9 +40,9 @@ export const Wardrobe: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
         <h1>My Wardrobe</h1>
         <Button onClick={() => setIsAddModalOpen(true)}>
           <Plus size={18} />
@@ -51,7 +51,7 @@ export const Wardrobe: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl border border-[var(--border)] p-4 mb-6">
+      <div className="bg-white rounded-xl border border-[var(--border)] p-4 mb-6 flex-shrink-0">
         <div className="grid md:grid-cols-4 gap-4">
           {/* Category Filter */}
           <div>
@@ -115,31 +115,33 @@ export const Wardrobe: React.FC = () => {
         </div>
       </div>
 
-      {/* Items Grid */}
-      {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
-            <ClothingCard key={item.id} item={item} onQuickAdd={handleQuickAdd} />
-          ))}
-        </div>
-      ) : (
-        /* Empty State */
-        <div className="text-center py-20">
-          <div className="w-24 h-24 bg-[var(--accent)]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shirt size={48} className="text-[var(--accent)]" />
+      {/* Items Grid - Scrollable Area */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 -mx-1 px-1">
+        {filteredItems.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-6">
+            {filteredItems.map((item) => (
+              <ClothingCard key={item.id} item={item} onQuickAdd={handleQuickAdd} />
+            ))}
           </div>
-          <h2 className="mb-2">Your wardrobe is empty</h2>
-          <p className="text-[var(--secondary)] mb-6">
-            {searchQuery ? 'No items match your search' : 'Start by adding your first clothing item'}
-          </p>
-          {!searchQuery && (
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <Plus size={18} />
-              Add Your First Item
-            </Button>
-          )}
-        </div>
-      )}
+        ) : (
+          /* Empty State */
+          <div className="text-center py-20">
+            <div className="w-24 h-24 bg-[var(--accent)]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shirt size={48} className="text-[var(--accent)]" />
+            </div>
+            <h2 className="mb-2">Your wardrobe is empty</h2>
+            <p className="text-[var(--secondary)] mb-6">
+              {searchQuery ? 'No items match your search' : 'Start by adding your first clothing item'}
+            </p>
+            {!searchQuery && (
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <Plus size={18} />
+                Add Your First Item
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Add Item Modal */}
       <AddItemModal
