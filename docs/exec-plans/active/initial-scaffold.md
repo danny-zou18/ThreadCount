@@ -1,6 +1,6 @@
 # Execution Plan: Initial Project Scaffold
 
-**Status**: In Progress
+**Status**: Complete (Phase 1 & 2 done; Phase 3 partial)
 **Created**: 2026-02-12
 **Target Completion**: 2026-02-19
 
@@ -10,16 +10,18 @@ Set up the Seamless frontend project from scratch with all tooling, testing infr
 
 ## Success Criteria
 
-- [ ] Vite + React + TypeScript project builds and runs
-- [ ] Tailwind CSS configured and working
-- [ ] React Router configured with route structure
-- [ ] Zustand installed and auth store created
-- [ ] Vitest + React Testing Library configured and running
-- [ ] Login page implemented and tested
-- [ ] Signup page implemented and tested
-- [ ] Protected route guard working
-- [ ] Shared UI components created (Button, Input, Card, Modal)
-- [ ] All linting and formatting configured
+- [x] Vite + React + TypeScript project builds and runs
+- [x] Tailwind CSS configured and working
+- [x] React Router configured with route structure
+- [x] Zustand installed and auth store created
+- [x] Vitest + React Testing Library configured and running
+- [x] Login page implemented and tested
+- [x] Signup page implemented and tested
+- [x] Protected route guard working
+- [x] Shared UI components created (Button, Input, Card)
+- [x] All linting and formatting configured
+- [x] GitHub Actions CI pipeline created
+- [x] API client layer created
 
 ## Progress Tracker
 
@@ -27,25 +29,27 @@ Set up the Seamless frontend project from scratch with all tooling, testing infr
   - Created AGENTS.md, ARCHITECTURE.md, docs structure
   - Defined domains, layers, tech stack
   - Created product specs for all features
-- [ ] Phase 1: Project scaffold
-  - Initialize Vite + React + TypeScript
-  - Configure Tailwind CSS v4
-  - Configure path aliases (`@/`)
-  - Set up React Router with route structure
-  - Set up Vitest + RTL
-  - Create shared UI primitives (Button, Input, Card)
-- [ ] Phase 2: Auth domain
-  - Auth types and zod schemas
-  - Auth API layer (mock for now, wire to FastAPI later)
-  - Auth Zustand store
-  - LoginForm component + tests
-  - SignupForm component + tests
-  - ProtectedRoute component
-  - Login and Signup pages
-- [ ] Phase 3: App shell
+- [x] Phase 1: Project scaffold (2026-02-12)
+  - Initialized Vite 7 + React 19 + TypeScript (strict)
+  - Configured Tailwind CSS v4 via @tailwindcss/vite
+  - Configured path aliases (`@/`)
+  - Set up React Router v7 with route structure
+  - Set up Vitest + RTL with jsdom
+  - Created shared UI primitives (Button, Input, Card)
+  - Created API client (fetch-based, token-aware)
+  - Created GitHub Actions CI (typecheck, lint, format, test, build)
+- [x] Phase 2: Auth domain (2026-02-12)
+  - Auth types and zod schemas (LoginSchema, SignupSchema, AuthResponseSchema)
+  - Auth API layer (calls FastAPI backend endpoints)
+  - Auth Zustand store (login, signup, logout, hydrate)
+  - LoginForm component + 7 tests
+  - SignupForm component + 6 tests
+  - ProtectedRoute component (redirects to /login)
+  - Login and Signup pages (centered card layout)
+- [ ] Phase 3: App shell (next)
   - AppLayout with sidebar navigation
   - Header component
-  - Dashboard placeholder page
+  - Dashboard placeholder page (basic version done)
   - All route placeholders wired up
 
 ## Decision Log

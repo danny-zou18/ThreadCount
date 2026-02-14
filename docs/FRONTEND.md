@@ -7,15 +7,14 @@
 
 | Tool | Purpose |
 |------|---------|
-| React 18 | UI framework |
-| TypeScript | Type safety |
-| Vite 6 + SWC | Build tool (fast compilation via Rust-based SWC) |
+| React 19 | UI framework |
+| TypeScript (strict) | Type safety |
+| Vite 7 + SWC | Build tool (fast compilation via Rust-based SWC) |
 | React Router v7 | Client-side routing |
 | Tailwind CSS v4 | Utility-first styling |
 | Zustand | State management |
-| Radix UI | Accessible headless UI primitives |
 | Lucide React | Icons |
-| react-hook-form + zod | Form handling + validation |
+| zod | Schema validation (parse at boundaries) |
 | Vitest + React Testing Library | Unit and component testing |
 
 ## Component Patterns
@@ -59,26 +58,95 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
 ## Styling
 
+> Full visual spec: `docs/design-docs/visual-style.md` — "The Light Table" theme.
+
 ### Tailwind CSS Conventions
 - Use Tailwind utility classes directly in JSX
-- Use CSS variables for theme colors (defined in `src/styles/globals.css`):
-  - `var(--background)`, `var(--primary)`, `var(--accent)`, `var(--secondary)`, `var(--border)`
-- Use `clsx` or `tailwind-merge` for conditional classes
-- No inline `style={}` except for truly dynamic values (e.g., calculated sizes)
+- Use CSS variables for theme colors (defined in `src/styles/globals.css`)
+- Use `clsx` for conditional classes
+- Use inline `style={{ fontFamily: 'var(--font-serif)' }}` only for font-family overrides and truly dynamic values
+- **No pure white** (`#FFFFFF`) anywhere — use `var(--bg-elevated)` for the lightest tone
 
 ### Design Tokens
 ```css
 :root {
-  --background: #FAFAFA;
-  --card-bg: #FFFFFF;
-  --primary: #1A1A1A;
-  --accent: #C9A87C;
-  --secondary: #6B7280;
-  --success: #22C55E;
-  --error: #EF4444;
-  --border: #E5E7EB;
+  /* Surfaces */
+  --bg: #F5F0EB;              /* Alabaster page background */
+  --bg-elevated: #FDFBF9;     /* Cards, modals */
+
+  /* Text */
+  --text-primary: #0D0D0D;    /* Near-black for headings */
+  --text-secondary: #6B6560;  /* Warm grey for body text */
+  --text-tertiary: #A39E98;   /* Metadata, placeholders */
+
+  /* Borders */
+  --border: #E8E3DD;          /* Subtle warm border */
+  --border-strong: #0D0D0D;   /* Editorial divider lines */
+
+  /* Accent — International Orange (the ONE UI color) */
+  --accent: #D94E1F;
+  --accent-hover: #C14319;
+
+  /* Semantic */
+  --error: #C4391C;
+  --success: #2D7A3A;
+
+  /* Shadows */
+  --shadow-levitate: 0 20px 40px -10px rgba(0,0,0,0.08);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+
+  /* Typography */
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
 }
 ```
+
+### Typography
+
+Three fonts, three roles:
+
+| Role | Font | CSS Variable | Usage |
+|------|------|-------------|-------|
+| **Headings** | Instrument Serif | `--font-serif` | Page titles, section headers — editorial/fashion magazine feel |
+| **Body** | Inter | `--font-sans` | Body text, buttons, form labels — neutral workhorse |
+| **Metadata** | Space Mono | `--font-mono` | Tags, labels, IDs, brand/size/fabric — garment tag feel |
+
+Apply via inline style where Tailwind's `font-*` utilities don't cover it:
+```tsx
+<h1 style={{ fontFamily: 'var(--font-serif)' }}>Wardrobe</h1>
+<span style={{ fontFamily: 'var(--font-mono)' }}>WOOL · AUTUMN</span>
+```
+
+### Component Styling Rules
+
+**Buttons:**
+- **Primary**: Solid `--accent` background, white text. Uppercase, letter-spaced. For THE main action on a page.
+- **Secondary**: Black border, transparent fill, black text. For supporting actions.
+- **Ghost**: No border, warm grey text. For tertiary actions.
+- No rounded corners on buttons.
+
+**Cards:**
+- `--bg-elevated` background, `--border` border, `--shadow-card` shadow.
+- No rounded corners (or 2px max). Editorial, not playful.
+
+**Inputs:**
+- Bottom-border only (underline style), no box borders.
+- Labels: uppercase, letter-spaced, `--text-secondary`.
+- Focus state: bottom border turns `--accent`.
+
+**Tags / Metadata:**
+- Space Mono, uppercase, letter-spaced.
+- Example: `WOOL · AUTUMN · NAVY`
+
+**Layout:**
+- Use thin `--border-strong` horizontal rules to separate sections (editorial style).
+- Aggressive whitespace — fill ~60% of the screen, let the content breathe.
+- Clothing images get `--shadow-levitate` to float above the surface.
+
+### Color Rule
+
+> The clothes are the only color on the screen. UI uses black, warm greys, and the single orange accent. No other colors.
 
 ## State Management
 
@@ -199,5 +267,6 @@ describe('LoginForm', () => {
 ## References
 
 - See `ARCHITECTURE.md` for domain structure and layer rules
+- See `docs/design-docs/visual-style.md` for the full visual design spec
 - See `docs/design-docs/core-beliefs.md` for foundational principles
 - See `docs/QUALITY_SCORE.md` for coverage targets

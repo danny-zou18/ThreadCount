@@ -1,18 +1,18 @@
 # Feature: Style Analysis
 
 **Status**: Planned
-**Priority**: P3
+**Priority**: P2
 **Domain**: Analysis (`src/features/analysis/`)
 **Last Updated**: 2026-02-12
 
 ## User Story
 
-As a user, I want the app to analyze what colors, styles, and clothing would look good on me — like consulting a personal stylist.
+As a user, I want the app to analyze what colors, styles, and clothing would look good on me — like consulting a personal stylist. I can then generate AI images of myself in outfits based on the recommendations.
 
 ## Acceptance Criteria
 
 - [ ] User can request a style analysis
-- [ ] Analysis considers user's photos/avatar
+- [ ] Analysis considers user's avatar photo
 - [ ] Results show recommended colors, styles, and clothing types
 - [ ] User can generate AI images based on analysis recommendations
 - [ ] Results saved for future reference

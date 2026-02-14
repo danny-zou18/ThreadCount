@@ -1,24 +1,30 @@
-# Feature: User Profile & Avatar
+# Feature: Onboarding & User Profile
 
 **Status**: Planned
-**Priority**: P1
+**Priority**: P0
 **Domain**: Profile (`src/features/profile/`)
 **Last Updated**: 2026-02-12
 
 ## User Story
 
-As a user, I want to upload photos of myself so the app can create an avatar for AI-generated try-on images.
+As a new user, I want to upload a full body photo of myself after signing up so the app can create an avatar for AI-generated try-on images. As a returning user, I want to manage my photos and profile.
 
 ## Acceptance Criteria
 
-### Avatar Photos
-- [ ] User prompted to upload photos after initial signup
-- [ ] User can upload multiple photos from different angles
-- [ ] Photos sent to backend for avatar/model creation
-- [ ] User can view their current avatar photos
-- [ ] User can delete individual photos
-- [ ] User can upload new photos to update their avatar
-- [ ] Skip option available (can set up later)
+### Onboarding (first-time after signup)
+- [ ] After signup, user is redirected to an onboarding screen
+- [ ] User prompted to upload a full body photo of themselves
+- [ ] Instructions shown (stand straight, neutral background, full body visible)
+- [ ] Photo preview shown before confirming upload
+- [ ] Photo sent to backend for avatar/model creation
+- [ ] Success confirmation shown
+- [ ] User proceeds to dashboard after completing onboarding
+- [ ] Skip option available (can set up later from profile)
+
+### Avatar Management (returning users)
+- [ ] User can view their current avatar photo from their profile
+- [ ] User can delete their photo and upload a new one to update their avatar
+- [ ] Updating the avatar triggers a new model creation on the backend
 
 ### Profile Management
 - [ ] User can view their profile information
@@ -26,23 +32,20 @@ As a user, I want to upload photos of myself so the app can create an avatar for
 - [ ] User can change password
 - [ ] User can delete their account (with confirmation)
 
-### Settings
-- [ ] Theme preference (if applicable)
-- [ ] Notification preferences (if applicable)
-
 ## Pages
 
 | Route | Component | Description |
 |-------|-----------|-------------|
-| `/profile` | ProfilePage | Avatar photos, profile info, edit options |
-| `/settings` | SettingsPage | Account settings, preferences |
+| `/onboarding` | OnboardingPage | Full body photo upload flow (shown after signup) |
+| `/profile` | ProfilePage | Avatar photo, profile info, edit options |
 
 ## Design References
 
-- Backend endpoints: `GET /profile`, `PUT /profile`, `POST /profile/avatar`, `DELETE /profile/avatar/:id`
-- Avatar processing happens on backend (feeds into AI model)
+- Backend endpoints: `GET /profile`, `PUT /profile`, `POST /profile/avatar`, `DELETE /profile/avatar`
+- Avatar processing happens on backend (feeds into AI model for try-on)
 
 ## Out of Scope (for now)
 
+- Multiple photos from different angles — future enhancement
 - 3D avatar visualization on frontend — future enhancement
 - Social profile (public/private) — future enhancement

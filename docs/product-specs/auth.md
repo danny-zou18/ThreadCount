@@ -1,6 +1,6 @@
 # Feature: User Authentication
 
-**Status**: Planned
+**Status**: In Progress
 **Priority**: P0
 **Domain**: Auth (`src/features/auth/`)
 **Last Updated**: 2026-02-12
@@ -14,16 +14,14 @@ As a new user, I want to create an account and log in so that I can access my vi
 ### Signup
 - [ ] User can create account with email and password
 - [ ] Email validation (valid format required)
-- [ ] Password requirements enforced (minimum length, complexity TBD)
+- [ ] Password requirements enforced (minimum 6 characters)
 - [ ] Error messages shown for validation failures
-- [ ] Redirect to dashboard after successful signup
-- [ ] User prompted to upload avatar photos after first signup (see user-profile.md)
+- [ ] After signup, user is redirected to the onboarding flow (see user-profile.md)
 
 ### Login
 - [ ] User can log in with email and password
 - [ ] Error message shown for invalid credentials
 - [ ] Redirect to dashboard after successful login
-- [ ] "Remember me" option (extended token lifetime)
 
 ### Session Management
 - [ ] Auth token stored securely
@@ -53,3 +51,4 @@ As a new user, I want to create an account and log in so that I can access my vi
 - Multi-factor authentication — future enhancement
 - Password reset via email — next iteration
 - Email verification — next iteration
+- "Remember me" option — next iteration
