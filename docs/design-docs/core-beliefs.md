@@ -10,6 +10,7 @@ These are the foundational principles that guide all decisions in the Seamless f
 **Belief**: If knowledge isn't in the repository, it doesn't exist.
 
 **Implications**:
+
 - All design decisions documented in `docs/design-docs/`
 - All feature requirements in `docs/product-specs/`
 - No critical context lives in Slack, Google Docs, or anyone's head
@@ -19,11 +20,13 @@ These are the foundational principles that guide all decisions in the Seamless f
 **Belief**: Validate data shapes where data enters or leaves the system.
 
 **Implications**:
+
 - All API responses validated with zod schemas in the API layer
 - All form inputs validated before submission
 - Never trust the shape of external data
 
 **Example**:
+
 ```typescript
 // ✅ Parse at boundary
 const WardrobeItemSchema = z.object({
@@ -44,6 +47,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: Business logic belongs in the backend. The frontend handles display and interaction.
 
 **Implications**:
+
 - No complex business rules in React components
 - Stores manage UI state, not business state
 - Backend is the source of truth for all data
@@ -54,6 +58,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: Each feature domain is self-contained. Cross-domain communication goes through defined interfaces.
 
 **Implications**:
+
 - Domain components don't import from other domains' components
 - Cross-domain data sharing happens via stores or type imports only
 - Shared UI primitives live in `src/shared/ui/`, not in domains
@@ -63,6 +68,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: If a rule matters, encode it in tooling.
 
 **Implications**:
+
 - Linters enforce file size limits and import rules
 - Tests validate architectural boundaries
 - CI catches violations before merge
@@ -73,6 +79,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: Tests should validate behavior, not implementation.
 
 **Implications**:
+
 - Test user-visible behavior (what the user sees and does)
 - Use React Testing Library (query by role, text, label—not by class or id)
 - Don't test implementation details (internal state, private methods)
@@ -83,6 +90,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: Code is read far more than it is written. Optimize for the reader.
 
 **Implications**:
+
 - Small files (300 lines max, 150-200 recommended)
 - Descriptive names over comments
 - Flat component hierarchies over deep nesting
@@ -93,6 +101,7 @@ const items = response.data as WardrobeItem[];
 **Belief**: Ship small, working increments. Don't build everything at once.
 
 **Implications**:
+
 - Features built end-to-end (types → API → store → component → page)
 - Each PR should be independently shippable
 - Stub or mock what doesn't exist yet
@@ -101,6 +110,7 @@ const items = response.data as WardrobeItem[];
 ## Application
 
 ### When Building a Feature
+
 1. Does a product spec exist? If not, write one first
 2. What domain does this belong to?
 3. What data does it need? Define types and API layer first
@@ -109,6 +119,7 @@ const items = response.data as WardrobeItem[];
 6. Is it tested? Write tests alongside code
 
 ### When Reviewing Code
+
 1. Are imports following layer rules? (Types → API → Stores → Components → Pages)
 2. Is external data validated at boundaries?
 3. Are files under 300 lines?

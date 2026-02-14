@@ -19,8 +19,8 @@ As a user, I want the app to analyze what colors, styles, and clothing would loo
 
 ## Pages
 
-| Route | Component | Description |
-|-------|-----------|-------------|
+| Route       | Component    | Description                                                   |
+| ----------- | ------------ | ------------------------------------------------------------- |
 | `/analysis` | AnalysisPage | Trigger analysis, view results, generate from recommendations |
 
 ## Design References

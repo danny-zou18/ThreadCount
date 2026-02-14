@@ -22,11 +22,13 @@ Seamless is a fashion web app where users upload photos of themselves to create 
 ## Getting Started
 
 ### First-Time Setup
+
 1. Read `ARCHITECTURE.md` for domain map and layer structure
 2. Review `docs/FRONTEND.md` for component patterns and conventions
 3. Check `docs/design-docs/core-beliefs.md` for foundational principles
 
 ### Before Starting Work
+
 1. Identify the affected domain(s) from `ARCHITECTURE.md`
 2. Check `docs/QUALITY_SCORE.md` for current quality baseline
 3. Review relevant product specs in `docs/product-specs/`
@@ -34,51 +36,56 @@ Seamless is a fashion web app where users upload photos of themselves to create 
 
 ## Where to Find Information
 
-| Need | Location |
-|------|----------|
-| What to build | `docs/product-specs/` |
-| Why it's designed this way | `docs/design-docs/` |
-| How the system is organized | `ARCHITECTURE.md` |
-| Frontend patterns & conventions | `docs/FRONTEND.md` |
-| Quality expectations | `docs/QUALITY_SCORE.md` |
-| Current work in progress | `docs/exec-plans/active/` |
-| Supabase & auth setup | `docs/guides/supabase-setup.md` |
-| Tech debt backlog | `docs/exec-plans/tech-debt-tracker.md` |
-| Library references | `docs/references/` |
+| Need                            | Location                               |
+| ------------------------------- | -------------------------------------- |
+| What to build                   | `docs/product-specs/`                  |
+| Why it's designed this way      | `docs/design-docs/`                    |
+| How the system is organized     | `ARCHITECTURE.md`                      |
+| Frontend patterns & conventions | `docs/FRONTEND.md`                     |
+| Quality expectations            | `docs/QUALITY_SCORE.md`                |
+| Current work in progress        | `docs/exec-plans/active/`              |
+| Supabase & auth setup           | `docs/guides/supabase-setup.md`        |
+| Tech debt backlog               | `docs/exec-plans/tech-debt-tracker.md` |
+| Library references              | `docs/references/`                     |
 
 ## Tech Stack
 
-| Layer | Choice |
-|-------|--------|
-| Framework | React 18 + TypeScript |
-| Build | Vite 6 + SWC |
-| Routing | React Router v7 |
-| Styling | Tailwind CSS v4 |
-| State | Zustand |
-| UI Primitives | Radix UI (install as needed) |
-| Icons | Lucide React |
-| Forms | react-hook-form + zod |
-| Testing | Vitest + React Testing Library |
-| HTTP | fetch → FastAPI backend |
+| Layer         | Choice                         |
+| ------------- | ------------------------------ |
+| Framework     | React 18 + TypeScript          |
+| Build         | Vite 6 + SWC                   |
+| Routing       | React Router v7                |
+| Styling       | Tailwind CSS v4                |
+| State         | Zustand                        |
+| UI Primitives | Radix UI (install as needed)   |
+| Icons         | Lucide React                   |
+| Forms         | react-hook-form + zod          |
+| Testing       | Vitest + React Testing Library |
+| HTTP          | fetch → FastAPI backend        |
 
 **Backend** (separate service): Python + FastAPI + Supabase (Postgres, Auth, Storage)
 
 ## Key Constraints
 
 ### Architectural Layers (Frontend)
+
 Within each domain, dependencies flow forward:
+
 ```
 Types → API → Stores → Components → Pages
 ```
+
 See `ARCHITECTURE.md` for full details.
 
 ### Code Quality
+
 - All API responses validated with zod schemas at boundaries
 - No `any` types except in adapter layers
 - File size limit: 300 lines (split if exceeded)
 - Test coverage: minimum 80% for stores/API, 70% for components
 
 ### Documentation
+
 - Product specs must have: user story, acceptance criteria
 - Design docs must have: problem statement, decision, rationale
 - All docs cross-linked and indexed
@@ -86,6 +93,7 @@ See `ARCHITECTURE.md` for full details.
 ## Working in This Repository
 
 ### Development Workflow
+
 1. **Understand**: Read related product spec and design docs
 2. **Plan**: For complex tasks, check or create an execution plan
 3. **Implement**: Follow architectural constraints from `ARCHITECTURE.md`
@@ -93,6 +101,7 @@ See `ARCHITECTURE.md` for full details.
 5. **Document**: Update relevant docs in the same PR
 
 ### When You're Stuck
+
 1. Check if patterns exist in other domains
 2. Verify the API contract with `docs/references/api-contracts.md`
 3. If a capability is missing, document the gap first

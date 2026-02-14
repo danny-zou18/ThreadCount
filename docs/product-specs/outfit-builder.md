@@ -12,6 +12,7 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 ## Acceptance Criteria
 
 ### Build Outfits
+
 - [ ] Canvas displays garment slots in a flatlay arrangement (top → bottom → shoes, plus optional accessories)
 - [ ] User can add items from wardrobe to canvas slots
 - [ ] Garment images scale dynamically to fit viewport
@@ -20,6 +21,7 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 - [ ] User can swap items by selecting a different one from the same category
 
 ### Generate AI Try-On
+
 - [ ] "Generate" button visible when at least one item is placed on the canvas
 - [ ] User clicks generate to create an AI image of themselves wearing the outfit
 - [ ] Loading state shown during generation (may take 10-30+ seconds)
@@ -27,6 +29,7 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 - [ ] User can regenerate with the same outfit
 
 ### Save & Manage
+
 - [ ] User can name and save an outfit
 - [ ] User can save a generated image to "Previous Looks"
 - [ ] Saved outfits viewable in a gallery
@@ -34,17 +37,18 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 - [ ] User can delete saved outfits and previous looks
 
 ### Style-Based Generation
+
 - [ ] User can select from a list of styles (casual, formal, streetwear, etc.)
 - [ ] System generates an outfit suggestion in that style
 - [ ] User sees AI image of themselves in the generated outfit
 
 ## Pages
 
-| Route | Component | Description |
-|-------|-----------|-------------|
+| Route             | Component         | Description                               |
+| ----------------- | ----------------- | ----------------------------------------- |
 | `/outfit-builder` | OutfitBuilderPage | Canvas + wardrobe panel + generate button |
-| `/outfits` | SavedOutfitsPage | Gallery of saved outfits |
-| `/previous-looks` | PreviousLooksPage | Gallery of saved AI-generated images |
+| `/outfits`        | SavedOutfitsPage  | Gallery of saved outfits                  |
+| `/previous-looks` | PreviousLooksPage | Gallery of saved AI-generated images      |
 
 ## Design References
 

@@ -12,6 +12,7 @@ As a new user, I want to upload a full body photo of myself after signing up so 
 ## Acceptance Criteria
 
 ### Onboarding (first-time after signup)
+
 - [ ] After signup, user is redirected to an onboarding screen
 - [ ] User prompted to upload a full body photo of themselves
 - [ ] Instructions shown (stand straight, neutral background, full body visible)
@@ -22,11 +23,13 @@ As a new user, I want to upload a full body photo of myself after signing up so 
 - [ ] Skip option available (can set up later from profile)
 
 ### Avatar Management (returning users)
+
 - [ ] User can view their current avatar photo from their profile
 - [ ] User can delete their photo and upload a new one to update their avatar
 - [ ] Updating the avatar triggers a new model creation on the backend
 
 ### Profile Management
+
 - [ ] User can view their profile information
 - [ ] User can edit display name
 - [ ] User can change password
@@ -34,10 +37,10 @@ As a new user, I want to upload a full body photo of myself after signing up so 
 
 ## Pages
 
-| Route | Component | Description |
-|-------|-----------|-------------|
+| Route         | Component      | Description                                      |
+| ------------- | -------------- | ------------------------------------------------ |
 | `/onboarding` | OnboardingPage | Full body photo upload flow (shown after signup) |
-| `/profile` | ProfilePage | Avatar photo, profile info, edit options |
+| `/profile`    | ProfilePage    | Avatar photo, profile info, edit options         |
 
 ## Design References
 

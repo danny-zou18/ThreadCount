@@ -12,13 +12,13 @@
 
 ## Implementation Priority
 
-| Priority | Feature | Status |
-|----------|---------|--------|
-| P0 | User Authentication | In Progress |
-| P0 | Onboarding & User Profile | Planned |
-| P0 | Virtual Wardrobe | Planned |
-| P1 | Outfit Builder & Try-On | Planned |
-| P2 | Style Analysis | Planned |
+| Priority | Feature                   | Status      |
+| -------- | ------------------------- | ----------- |
+| P0       | User Authentication       | In Progress |
+| P0       | Onboarding & User Profile | Planned     |
+| P0       | Virtual Wardrobe          | Planned     |
+| P1       | Outfit Builder & Try-On   | Planned     |
+| P2       | Style Analysis            | Planned     |
 
 ## Deferred Features
 

@@ -12,6 +12,7 @@ As a new user, I want to create an account and log in so that I can access my vi
 ## Acceptance Criteria
 
 ### Signup
+
 - [ ] User can create account with email and password
 - [ ] Email validation (valid format required)
 - [ ] Password requirements enforced (minimum 6 characters)
@@ -19,26 +20,29 @@ As a new user, I want to create an account and log in so that I can access my vi
 - [ ] After signup, user is redirected to the onboarding flow (see user-profile.md)
 
 ### Login
+
 - [ ] User can log in with email and password
 - [ ] Error message shown for invalid credentials
 - [ ] Redirect to dashboard after successful login
 
 ### Session Management
+
 - [ ] Auth token stored securely
 - [ ] Token automatically refreshed before expiry
 - [ ] User redirected to login on session expiry
 - [ ] Logout clears all stored tokens and state
 
 ### Protected Routes
+
 - [ ] Unauthenticated users redirected to /login
 - [ ] After login, user returns to originally requested page
 
 ## Pages
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/login` | LoginPage | Email + password form, link to signup |
-| `/signup` | SignupPage | Email + password form, link to login |
+| Route     | Component  | Description                           |
+| --------- | ---------- | ------------------------------------- |
+| `/login`  | LoginPage  | Email + password form, link to signup |
+| `/signup` | SignupPage | Email + password form, link to login  |
 
 ## Design References
 

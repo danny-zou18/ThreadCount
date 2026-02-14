@@ -24,6 +24,7 @@ This guide explains how to connect the Seamless frontend to Supabase for authent
 ```
 
 The frontend talks to **two** services:
+
 1. **Supabase** — for authentication (login, signup, Google OAuth, session management)
 2. **FastAPI** — for everything else (wardrobe, outfits, AI try-on)
 
@@ -52,6 +53,7 @@ Runs Supabase on your machine via Docker. Fast, offline, free.
 ## Mode A: Deployed Supabase Setup
 
 ### Prerequisites
+
 - A Supabase project at [supabase.com](https://supabase.com)
 - A Google OAuth Client ID from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 
@@ -117,6 +119,7 @@ Visit `http://localhost:3000`. Click "Continue with Google" — it should redire
 ## Mode B: Local Supabase Setup
 
 ### Prerequisites
+
 - [Docker Desktop](https://docs.docker.com/desktop/) installed and running
 - [Supabase CLI](https://supabase.com/docs/guides/cli) installed (`brew install supabase/tap/supabase`)
 
@@ -201,11 +204,11 @@ npm run dev
 
 The only thing that changes between modes is the two `VITE_SUPABASE_*` values in `.env.local`:
 
-| Variable | Mode A (Deployed) | Mode B (Local) |
-|----------|-------------------|----------------|
-| `VITE_SUPABASE_URL` | `https://xxx.supabase.co` | `http://localhost:54321` |
-| `VITE_SUPABASE_ANON_KEY` | Key from dashboard | Key from `supabase start` |
-| `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET` | Not needed (in dashboard) | Needed (for config.toml) |
+| Variable                                      | Mode A (Deployed)         | Mode B (Local)            |
+| --------------------------------------------- | ------------------------- | ------------------------- |
+| `VITE_SUPABASE_URL`                           | `https://xxx.supabase.co` | `http://localhost:54321`  |
+| `VITE_SUPABASE_ANON_KEY`                      | Key from dashboard        | Key from `supabase start` |
+| `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET` | Not needed (in dashboard) | Needed (for config.toml)  |
 
 **After changing `.env.local`, restart the dev server** (`Ctrl+C`, then `npm run dev`). Vite only reads env vars at startup.
 
@@ -232,10 +235,10 @@ npm run dev
 
 You may need multiple redirect URIs in Google Cloud Console depending on which modes you use:
 
-| Mode | Redirect URI |
-|------|-------------|
+| Mode              | Redirect URI                                         |
+| ----------------- | ---------------------------------------------------- |
 | Deployed Supabase | `https://<project-ref>.supabase.co/auth/v1/callback` |
-| Local Supabase | `http://localhost:54321/auth/v1/callback` |
+| Local Supabase    | `http://localhost:54321/auth/v1/callback`            |
 
 Both can be added simultaneously — Google allows multiple redirect URIs.
 
@@ -244,24 +247,29 @@ Both can be added simultaneously — Google allows multiple redirect URIs.
 ## Troubleshooting
 
 ### "Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY"
+
 - Check `.env.local` exists and has both variables filled in
 - Restart the dev server (Vite only reads env vars at startup)
 - Make sure variable names match exactly (e.g. `VITE_SUPABASE_ANON_KEY`, not `VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY`)
 
 ### Google login redirects back to the login page
+
 - Auth initialization race condition. Check that `ProtectedRoute` uses `isInitialized` (already fixed in our codebase).
 - Check browser console for errors.
 
 ### "redirect_uri_mismatch" error from Google
+
 - The redirect URI in Google Cloud Console must exactly match what Supabase is using.
 - For deployed: `https://<project-ref>.supabase.co/auth/v1/callback`
 - For local: `http://localhost:54321/auth/v1/callback`
 
 ### Email/password login fails locally
+
 - Make sure `supabase start` is running.
 - Check that `VITE_SUPABASE_URL` points to `http://localhost:54321`.
 
 ### Token/session not persisting after page refresh
+
 - Supabase JS stores tokens in `localStorage`. Check browser DevTools → Application → Local Storage.
 - Make sure `App.tsx` calls `initialize()` on mount.
 
@@ -269,11 +277,11 @@ Both can be added simultaneously — Google allows multiple redirect URIs.
 
 ## File Reference
 
-| File | Purpose |
-|------|---------|
-| `.env.local` | Your actual secrets and config (gitignored) |
-| `.env.example` | Template — copy to `.env.local` and fill in |
-| `supabase/config.toml` | Local Supabase config (committed) |
-| `src/shared/api/supabase.ts` | Supabase JS client initialization |
-| `src/features/auth/api.ts` | Auth functions (login, signup, Google OAuth, logout) |
-| `src/features/auth/store.ts` | Zustand store with `onAuthStateChange` listener |
+| File                         | Purpose                                              |
+| ---------------------------- | ---------------------------------------------------- |
+| `.env.local`                 | Your actual secrets and config (gitignored)          |
+| `.env.example`               | Template — copy to `.env.local` and fill in          |
+| `supabase/config.toml`       | Local Supabase config (committed)                    |
+| `src/shared/api/supabase.ts` | Supabase JS client initialization                    |
+| `src/features/auth/api.ts`   | Auth functions (login, signup, Google OAuth, logout) |
+| `src/features/auth/store.ts` | Zustand store with `onAuthStateChange` listener      |
