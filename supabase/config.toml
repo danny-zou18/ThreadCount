@@ -1,0 +1,9 @@
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+
+[auth.external.google]
+enabled = true
+client_id = "432438852690-reo7jfn72reka5hs622i83ur1a797eva.apps.googleusercontent.com"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
