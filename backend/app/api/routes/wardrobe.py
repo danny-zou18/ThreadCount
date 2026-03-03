@@ -109,22 +109,28 @@ async def create_wardrobe_item(
     name: str = Form(...),
     category: str = Form(...),
     labels: Optional[str] = Form(None),
-    image: UploadFile = File(...)
+    image_path: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None)
 ):
-    """Create a new wardrobe item with image upload."""
+    """Create a new wardrobe item with image upload or existing image path."""
     logger.info(f"Creating wardrobe item for user: {user_id}")
     supabase = get_supabase()
     
     try:
         item_id = str(uuid.uuid4())
+        file_path = image_path
         
-        file_ext = image.filename.split('.')[-1].lower() if image.filename else 'jpg'
-        file_path = f"{user_id}/{item_id}.{file_ext}"
+        if not file_path and image:
+            file_ext = image.filename.split('.')[-1].lower() if image.filename else 'jpg'
+            file_path = f"{user_id}/{item_id}.{file_ext}"
+            
+            file_content = await image.read()
+            
+            logger.info(f"Uploading image to Supabase Storage: {file_path}")
+            supabase.storage.from_("wardrobe").upload(file_path, file_content)
         
-        file_content = await image.read()
-        
-        logger.info(f"Uploading image to Supabase Storage: {file_path}")
-        supabase.storage.from_("wardrobe").upload(file_path, file_content)
+        if not file_path:
+            raise HTTPException(status_code=400, detail="Either image_path or image file is required")
         
         labels_list = []
         if labels:
