@@ -19,13 +19,6 @@ export function OutfitCanvas() {
     const isSelected = selectedSlot === slot;
     const imageUrl = item ? getItemImageUrl(item.image_path) : null;
 
-    const heights: Record<OutfitSlot, string> = {
-      top1: '30%',
-      top2: '30%',
-      bottom: '30%',
-      shoes: '10%',
-    };
-
     const placeholders: Record<OutfitSlot, string> = {
       top1: '👕',
       top2: '+',
@@ -40,9 +33,8 @@ export function OutfitCanvas() {
         className={`
           relative flex items-center justify-center
           transition-all duration-200 cursor-pointer
-          ${isSelected ? 'ring-2 ring-[var(--color-primary)] ring-offset-2' : ''}
+          ${isSelected ? 'ring-2 ring-[var(--color-primary)]' : ''}
         `}
-        style={{ height: heights[slot] }}
       >
         {imageUrl ? (
           <div className="relative w-full h-full p-1">
@@ -71,10 +63,20 @@ export function OutfitCanvas() {
 
   return (
     <div className="relative w-full h-full flex flex-col">
-      {renderSlot('top1')}
-      {renderSlot('top2')}
-      {renderSlot('bottom')}
-      {renderSlot('shoes')}
+      <div className="flex h-[35%]">
+        <div className="w-1/2 h-full">
+          {renderSlot('top1')}
+        </div>
+        <div className="w-1/2 h-full">
+          {renderSlot('top2')}
+        </div>
+      </div>
+      <div className="h-[45%]">
+        {renderSlot('bottom')}
+      </div>
+      <div className="h-[20%]">
+        {renderSlot('shoes')}
+      </div>
     </div>
   );
 }
