@@ -53,7 +53,7 @@ export function OutfitBuilderPage() {
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-2 gap-4 min-h-0">
+        <div className="flex-1 grid grid-cols-[1.5fr_1fr] gap-4 min-h-0">
           <div className="bg-gray-100 rounded-lg overflow-hidden">
             <OutfitCanvas />
           </div>
