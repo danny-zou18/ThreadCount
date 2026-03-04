@@ -1,9 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
-import { SLOT_CATEGORIES, type OutfitItem } from '../types';
-import { CATEGORY_LABELS, type Category } from '@/features/wardrobe/types';
+import { 
+  MAIN_CATEGORIES, 
+  MAIN_CATEGORY_ORDER, 
+  type MainCategory,
+  type SubCategory,
+  type OutfitItem,
+  categoryToSlot,
+} from '../types';
+import { type Category } from '@/features/wardrobe/types';
 import { supabase } from '@/shared/api/supabase';
+import { Button } from '@/shared/ui/Button';
 
 function getItemImageUrl(path: string | null): string | null {
   if (!path) return null;
@@ -11,43 +19,67 @@ function getItemImageUrl(path: string | null): string | null {
   return data.publicUrl;
 }
 
-const TAB_ORDER: Category[] = ['tops', 'bottoms', 'dresses', 'outerwear', 'shoes', 'accessories'];
-
 export function WardrobePanel() {
-  const { selectedSlot, addToSlot, canvas } = useOutfitBuilderStore();
+  const { addToSlot, removeFromSlot, canvas } = useOutfitBuilderStore();
   const { items: wardrobeItems } = useWardrobeStore();
-  const [activeTab, setActiveTab] = useState<Category>('tops');
-  const tabsRef = useRef<HTMLDivElement>(null);
+  const [selectedMain, setSelectedMain] = useState<MainCategory | null>(null);
+  const [selectedSub, setSelectedSub] = useState<SubCategory | null>(null);
+  const [pendingItem, setPendingItem] = useState<OutfitItem | null>(null);
 
-  useEffect(() => {
-    if (selectedSlot) {
-      const slotCategories = SLOT_CATEGORIES[selectedSlot];
-      if (slotCategories.includes(activeTab)) return;
-      const firstCategory = slotCategories[0];
-      if (firstCategory) {
-        setActiveTab(firstCategory);
-      }
-    }
-    // Intentionally only depend on selectedSlot to avoid loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSlot]);
-
-  const handleTabClick = (category: Category) => {
-    setActiveTab(category);
+  const handleSelectMain = (main: MainCategory) => {
+    setSelectedMain(main);
+    setSelectedSub(null);
   };
 
-  const filteredItems = wardrobeItems.filter((item) => item.category === activeTab);
+  const handleSelectSub = (sub: SubCategory) => {
+    setSelectedSub(sub);
+  };
+
+  const handleBack = () => {
+    if (selectedSub) {
+      setSelectedSub(null);
+    } else if (selectedMain) {
+      setSelectedMain(null);
+    }
+  };
 
   const handleSelectItem = (item: { id: string; name: string; category: Category; image_path: string | null }) => {
-    if (!selectedSlot) return;
-    
     const outfitItem: OutfitItem = {
       id: item.id,
       name: item.name,
       category: item.category,
       image_path: item.image_path,
     };
-    addToSlot(selectedSlot, outfitItem);
+
+    const slot = categoryToSlot(item.category);
+
+    if (slot === 'top') {
+      addToSlot('top', outfitItem);
+    } else if (slot === 'bottom') {
+      if (canvas.bottom) {
+        setPendingItem(outfitItem);
+      } else {
+        addToSlot('bottom', outfitItem);
+      }
+    } else if (slot === 'shoes') {
+      if (canvas.shoes) {
+        setPendingItem(outfitItem);
+      } else {
+        addToSlot('shoes', outfitItem);
+      }
+    }
+  };
+
+  const handleConfirmReplace = () => {
+    if (!pendingItem) return;
+    const slot = categoryToSlot(pendingItem.category);
+    if (slot === 'bottom') {
+      removeFromSlot('bottom');
+    } else if (slot === 'shoes') {
+      removeFromSlot('shoes');
+    }
+    addToSlot(slot, pendingItem);
+    setPendingItem(null);
   };
 
   const isItemInCanvas = (itemId: string) => {
@@ -57,90 +89,128 @@ export function WardrobePanel() {
     return inTop || inBottom || inShoes;
   };
 
+  const getFilteredItems = () => {
+    if (!selectedSub) return [];
+    return wardrobeItems.filter((item) => selectedSub.categories.includes(item.category));
+  };
+
+  const filteredItems = getFilteredItems();
+
   return (
     <div className="flex flex-col h-full bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-      <div className="p-4 border-b border-[var(--border)]">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Wardrobe</h2>
-        {selectedSlot && (
-          <p className="text-sm text-[var(--text-tertiary)] mt-1">
-            Select a {selectedSlot} to add
-          </p>
-        )}
-      </div>
-
-      <div 
-        ref={tabsRef}
-        className="flex overflow-x-auto gap-1 p-2 border-b border-[var(--border)] scrollbar-hide"
-      >
-        {TAB_ORDER.map((category) => (
+      <div className="p-3 border-b border-[var(--border)] flex items-center gap-2">
+        {selectedMain && (
           <button
-            key={category}
-            onClick={() => handleTabClick(category)}
-            className={`
-              flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap
-              transition-colors
-              ${activeTab === category
-                ? 'bg-[var(--color-primary)] text-white'
-                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'
-              }
-            `}
+            onClick={handleBack}
+            className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors"
           >
-            {CATEGORY_LABELS[category]}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
           </button>
-        ))}
+        )}
+        <h2 className="text-base font-semibold text-[var(--text-primary)]">
+          {selectedSub ? selectedSub.label : selectedMain ? MAIN_CATEGORIES[selectedMain].label : 'Wardrobe'}
+        </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-8 text-[var(--text-tertiary)]">
-            <p>No items in this category</p>
-            <p className="text-xs mt-1">Add items to your wardrobe first</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {filteredItems.map((item) => {
-              const imageUrl = getItemImageUrl(item.image_path);
-              const inCanvas = isItemInCanvas(item.id);
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSelectItem(item)}
-                  disabled={!selectedSlot}
-                  className={`
-                    flex flex-col items-center p-2 rounded-lg border transition-all
-                    ${inCanvas 
-                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10' 
-                      : 'border-[var(--border)] hover:border-[var(--color-primary)] hover:bg-[var(--bg-hover)]'
-                    }
-                    ${!selectedSlot ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                  `}
-                >
-                  <div className="w-16 h-16 flex items-center justify-center mb-2">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={item.name}
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded flex items-center justify-center">
-                        <span className="text-xl">👕</span>
-                      </div>
+      {!selectedMain && (
+        <div className="flex-1 p-4 flex flex-col gap-3">
+          {MAIN_CATEGORY_ORDER.map((main) => (
+            <button
+              key={main}
+              onClick={() => handleSelectMain(main)}
+              className="p-4 rounded-lg border border-[var(--border)] hover:border-[var(--color-primary)] hover:bg-[var(--bg-hover)] transition-all text-left"
+            >
+              <span className="font-medium">{MAIN_CATEGORIES[main].label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedMain && !selectedSub && (
+        <div className="flex-1 p-4 flex flex-col gap-3">
+          {MAIN_CATEGORIES[selectedMain].subCategories.map((sub) => (
+            <button
+              key={sub.id}
+              onClick={() => handleSelectSub(sub)}
+              className="p-3 rounded-lg border border-[var(--border)] hover:border-[var(--color-primary)] hover:bg-[var(--bg-hover)] transition-all text-left"
+            >
+              <span>{sub.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedSub && (
+        <div className="flex-1 overflow-y-auto p-3">
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-8 text-[var(--text-tertiary)]">
+              <p>No items in this category</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {filteredItems.map((item) => {
+                const imageUrl = getItemImageUrl(item.image_path);
+                const inCanvas = isItemInCanvas(item.id);
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelectItem(item)}
+                    className={`
+                      flex flex-col items-center p-2 rounded-lg border transition-all
+                      ${inCanvas
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
+                        : 'border-[var(--border)] hover:border-[var(--color-primary)] hover:bg-[var(--bg-hover)]'
+                      }
+                    `}
+                  >
+                    <div className="w-14 h-14 flex items-center justify-center mb-1">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={item.name}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-[var(--bg-secondary)] rounded flex items-center justify-center">
+                          <span className="text-lg">👕</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-xs text-[var(--text-secondary)] text-center truncate w-full">
+                      {item.name}
+                    </span>
+                    {inCanvas && (
+                      <span className="text-[10px] text-[var(--color-primary)]">Added</span>
                     )}
-                  </div>
-                  <span className="text-xs text-[var(--text-secondary)] text-center truncate w-full">
-                    {item.name}
-                  </span>
-                  {inCanvas && (
-                    <span className="text-[10px] text-[var(--color-primary)]">In outfit</span>
-                  )}
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {pendingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-xs bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)] p-4">
+            <h3 className="font-semibold mb-2">Replace item?</h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-4">
+              This slot already has an item. Replace it with {pendingItem.name}?
+            </p>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setPendingItem(null)} className="flex-1">
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleConfirmReplace} className="flex-1">
+                Replace
+              </Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
