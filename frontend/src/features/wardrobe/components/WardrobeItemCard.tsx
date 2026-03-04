@@ -13,7 +13,7 @@ export function WardrobeItemCard({ item, onClick }: WardrobeItemCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div 
+    <div
       className="group relative cursor-pointer"
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}

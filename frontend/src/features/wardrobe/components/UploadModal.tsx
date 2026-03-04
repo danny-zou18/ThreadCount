@@ -72,11 +72,11 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       const bgResult = await removeBackground(user.id, file);
       setPreview(bgResult.processedImageUrl);
       setProcessedImagePath(bgResult.storagePath);
-      
+
       // Try AI analysis, but don't block on it
       try {
         const analysis = await analyzeImage(file);
-        
+
         if (analysis.suggested_name) {
           setName(analysis.suggested_name);
         }
@@ -95,7 +95,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       } catch {
         // AI analysis skipped
       }
-      
+
       setIsProcessing(false);
       setProcessingProgress('');
     } catch {
@@ -143,7 +143,15 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
         .map((l) => l.trim())
         .filter((l) => l);
 
-      await addItem(name.trim(), category, undefined, labelsList, processedImagePath, colors, seasons);
+      await addItem(
+        name.trim(),
+        category,
+        undefined,
+        labelsList,
+        processedImagePath,
+        colors,
+        seasons,
+      );
       onClose();
     } catch {
       // Error handling
@@ -235,7 +243,9 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                   Drop your photo here or click to browse
                 </p>
                 <p className="text-xs text-[var(--text-tertiary)]">JPG, PNG up to 10MB</p>
-                <p className="text-xs text-[var(--accent)] mt-2">AI will auto-detect colors, seasons & tags</p>
+                <p className="text-xs text-[var(--accent)] mt-2">
+                  AI will auto-detect colors, seasons & tags
+                </p>
               </div>
             ) : (
               <div className="relative mb-6">
@@ -316,12 +326,18 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
               {(colors.length > 0 || seasons.length > 0) && (
                 <div className="flex flex-wrap gap-2">
                   {colors.map((color) => (
-                    <span key={color} className="px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-xs rounded">
+                    <span
+                      key={color}
+                      className="px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-xs rounded"
+                    >
                       {color}
                     </span>
                   ))}
                   {seasons.map((season) => (
-                    <span key={season} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">
+                    <span
+                      key={season}
+                      className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded"
+                    >
                       {season}
                     </span>
                   ))}
@@ -347,12 +363,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <Button
-                type="button"
-                variant="ghost"
-                className="flex-1"
-                onClick={handleClose}
-              >
+              <Button type="button" variant="ghost" className="flex-1" onClick={handleClose}>
                 Cancel
               </Button>
               <Button

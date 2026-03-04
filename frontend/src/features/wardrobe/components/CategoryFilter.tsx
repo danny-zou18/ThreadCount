@@ -7,7 +7,14 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
-  const categories: Category[] = ['tops', 'bottoms', 'dresses', 'shoes', 'accessories', 'outerwear'];
+  const categories: Category[] = [
+    'tops',
+    'bottoms',
+    'dresses',
+    'shoes',
+    'accessories',
+    'outerwear',
+  ];
 
   return (
     <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -17,7 +24,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
           'px-4 py-2 text-sm rounded-full border whitespace-nowrap transition-colors',
           !selectedCategory
             ? 'bg-[var(--text-primary)] text-[var(--bg)] border-[var(--text-primary)]'
-            : 'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]'
+            : 'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]',
         )}
       >
         All
@@ -30,7 +37,7 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
             'px-4 py-2 text-sm rounded-full border whitespace-nowrap transition-colors',
             selectedCategory === category
               ? 'bg-[var(--text-primary)] text-[var(--bg)] border-[var(--text-primary)]'
-              : 'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]'
+              : 'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]',
           )}
         >
           {CATEGORY_LABELS[category]}
