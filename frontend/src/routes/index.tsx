@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { WardrobePage } from '@/features/wardrobe/pages/WardrobePage';
+import { OutfitBuilderPage } from '@/features/outfit-builder/pages/OutfitBuilderPage';
 
 export function AppRoutes() {
   return (
@@ -18,9 +19,9 @@ export function AppRoutes() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/wardrobe" element={<WardrobePage />} />
+        <Route path="/outfit-builder" element={<OutfitBuilderPage />} />
 
         {/* Placeholder routes — add pages as domains are built */}
-        {/* <Route path="/outfit-builder" element={<OutfitBuilderPage />} /> */}
         {/* <Route path="/outfits" element={<SavedOutfitsPage />} /> */}
         {/* <Route path="/previous-looks" element={<PreviousLooksPage />} /> */}
         {/* <Route path="/analysis" element={<AnalysisPage />} /> */}
