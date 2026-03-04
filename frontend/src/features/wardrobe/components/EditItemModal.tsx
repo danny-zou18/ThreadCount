@@ -97,7 +97,12 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
               className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -110,15 +115,29 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
 
           {showDeleteConfirm ? (
             <div className="text-center py-6">
-              <svg className="w-16 h-16 mx-auto text-[var(--error)] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              <svg
+                className="w-16 h-16 mx-auto text-[var(--error)] mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
               </svg>
               <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">Delete Item?</h3>
               <p className="text-sm text-[var(--text-secondary)] mb-6">
                 This will permanently delete "{item.name}". This action cannot be undone.
               </p>
               <div className="flex gap-3">
-                <Button variant="ghost" className="flex-1" onClick={() => setShowDeleteConfirm(false)}>
+                <Button
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -140,7 +159,10 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="edit-name" className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
+                  <label
+                    htmlFor="edit-name"
+                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
+                  >
                     Name
                   </label>
                   <input
@@ -154,7 +176,10 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="edit-category" className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
+                  <label
+                    htmlFor="edit-category"
+                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
+                  >
                     Category
                   </label>
                   <select
@@ -172,7 +197,10 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="edit-labels" className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
+                  <label
+                    htmlFor="edit-labels"
+                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
+                  >
                     Tags (comma-separated)
                   </label>
                   <input
@@ -186,10 +214,15 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
 
                 {colors.length > 0 && (
                   <div>
-                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">Colors</p>
+                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
+                      Colors
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {colors.map((color) => (
-                        <span key={color} className="px-3 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-sm rounded-full">
+                        <span
+                          key={color}
+                          className="px-3 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-sm rounded-full"
+                        >
                           {color}
                         </span>
                       ))}
@@ -199,10 +232,15 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
 
                 {seasons.length > 0 && (
                   <div>
-                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">Seasons</p>
+                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
+                      Seasons
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {seasons.map((season) => (
-                        <span key={season} className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full">
+                        <span
+                          key={season}
+                          className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full"
+                        >
                           {season}
                         </span>
                       ))}

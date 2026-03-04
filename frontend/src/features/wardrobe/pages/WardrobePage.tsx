@@ -10,7 +10,8 @@ import { UploadModal } from '../components/UploadModal';
 import { EditItemModal } from '../components/EditItemModal';
 
 export function WardrobePage() {
-  const { items, isLoading, error, filters, fetchItems, setFilters, clearError } = useWardrobeStore();
+  const { items, isLoading, error, filters, fetchItems, setFilters, clearError } =
+    useWardrobeStore();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WardrobeItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +51,8 @@ export function WardrobePage() {
     setShowSeasonFilter(false);
   };
 
-  const hasActiveFilters = filters.search || filters.colors?.length || filters.seasons?.length || filters.category;
+  const hasActiveFilters =
+    filters.search || filters.colors?.length || filters.seasons?.length || filters.category;
 
   return (
     <div className="min-h-screen bg-[var(--bg)] p-8">
@@ -62,9 +64,7 @@ export function WardrobePage() {
           >
             My Wardrobe
           </h1>
-          <Button onClick={() => setIsUploadModalOpen(true)}>
-            + Add Item
-          </Button>
+          <Button onClick={() => setIsUploadModalOpen(true)}>+ Add Item</Button>
         </div>
         <div className="border-t border-[var(--border-strong)] mb-8" />
 
@@ -89,14 +89,14 @@ export function WardrobePage() {
             />
             <Button onClick={handleSearch}>Search</Button>
           </div>
-          <Button 
-            variant={showColorFilter ? 'primary' : 'ghost'} 
+          <Button
+            variant={showColorFilter ? 'primary' : 'ghost'}
             onClick={() => setShowColorFilter(!showColorFilter)}
           >
             Colors
           </Button>
-          <Button 
-            variant={showSeasonFilter ? 'primary' : 'ghost'} 
+          <Button
+            variant={showSeasonFilter ? 'primary' : 'ghost'}
             onClick={() => setShowSeasonFilter(!showSeasonFilter)}
           >
             Seasons
@@ -110,19 +110,20 @@ export function WardrobePage() {
 
         {showColorFilter && (
           <div className="mb-4 p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Filter by colors</p>
-            <ColorFilter 
-              selectedColors={filters.colors || []} 
-              onColorChange={handleColorChange}
-            />
+            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
+              Filter by colors
+            </p>
+            <ColorFilter selectedColors={filters.colors || []} onColorChange={handleColorChange} />
           </div>
         )}
 
         {showSeasonFilter && (
           <div className="mb-4 p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Filter by seasons</p>
-            <SeasonFilter 
-              selectedSeasons={filters.seasons || []} 
+            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
+              Filter by seasons
+            </p>
+            <SeasonFilter
+              selectedSeasons={filters.seasons || []}
               onSeasonChange={handleSeasonChange}
             />
           </div>
@@ -146,9 +147,7 @@ export function WardrobePage() {
                   ? `No ${CATEGORY_LABELS[filters.category].toLowerCase()} in your wardrobe yet.`
                   : 'Your wardrobe is empty. Start by adding some items!'}
             </p>
-            <Button onClick={() => setIsUploadModalOpen(true)}>
-              Add Your First Item
-            </Button>
+            <Button onClick={() => setIsUploadModalOpen(true)}>Add Your First Item</Button>
           </div>
         ) : (
           <WardrobeGrid items={items} onItemClick={setEditingItem} />

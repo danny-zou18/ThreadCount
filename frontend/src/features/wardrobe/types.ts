@@ -51,7 +51,14 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   outerwear: 'Outerwear',
 };
 
-export const CATEGORIES: Category[] = ['tops', 'bottoms', 'dresses', 'shoes', 'accessories', 'outerwear'];
+export const CATEGORIES: Category[] = [
+  'tops',
+  'bottoms',
+  'dresses',
+  'shoes',
+  'accessories',
+  'outerwear',
+];
 
 export const SEASONS: Season[] = ['spring', 'summer', 'fall', 'winter'];
 
@@ -63,7 +70,24 @@ export const SEASON_LABELS: Record<Season, string> = {
 };
 
 export const COMMON_COLORS = [
-  'black', 'white', 'gray', 'navy', 'blue', 'red', 'green', 'yellow', 
-  'orange', 'pink', 'purple', 'brown', 'beige', 'cream', 'tan', 'burgundy',
-  'teal', 'coral', 'olive', 'charcoal'
+  'black',
+  'white',
+  'gray',
+  'navy',
+  'blue',
+  'red',
+  'green',
+  'yellow',
+  'orange',
+  'pink',
+  'purple',
+  'brown',
+  'beige',
+  'cream',
+  'tan',
+  'burgundy',
+  'teal',
+  'coral',
+  'olive',
+  'charcoal',
 ];

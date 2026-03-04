@@ -31,7 +31,7 @@ const COLOR_MAP: Record<string, string> = {
 export function ColorFilter({ selectedColors, onColorChange }: ColorFilterProps) {
   const toggleColor = (color: string) => {
     if (selectedColors.includes(color)) {
-      onColorChange(selectedColors.filter(c => c !== color));
+      onColorChange(selectedColors.filter((c) => c !== color));
     } else {
       onColorChange([...selectedColors, color]);
     }
@@ -46,9 +46,9 @@ export function ColorFilter({ selectedColors, onColorChange }: ColorFilterProps)
           title={name}
           className={clsx(
             'w-6 h-6 rounded-full border-2 transition-all',
-            selectedColors.includes(name) 
-              ? 'border-[var(--text-primary)] scale-110' 
-              : 'border-transparent hover:scale-105'
+            selectedColors.includes(name)
+              ? 'border-[var(--text-primary)] scale-110'
+              : 'border-transparent hover:scale-105',
           )}
           style={{ backgroundColor: hex }}
         />
