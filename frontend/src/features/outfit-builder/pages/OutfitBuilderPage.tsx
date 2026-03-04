@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
 import { OutfitCanvas } from '../components/OutfitCanvas';
-import { WardrobeSelector } from '../components/WardrobeSelector';
+import { WardrobePanel } from '../components/WardrobePanel';
 import { OutfitCard } from '../components/OutfitCard';
 import { Button } from '@/shared/ui/Button';
 
@@ -45,12 +45,12 @@ export function OutfitBuilderPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-7xl mx-auto h-[calc(100vh-6rem)]">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Outfit Builder</h1>
             <p className="text-[var(--text-secondary)] mt-1">
-              Create outfits by selecting items from your wardrobe
+              Click on the canvas to add items from your wardrobe
             </p>
           </div>
           <div className="flex gap-3">
@@ -63,49 +63,48 @@ export function OutfitBuilderPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-full">
+          <div className="lg:col-span-3">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Canvas</h2>
-              <span className="text-sm text-[var(--text-tertiary)]">
-                {itemCount} item{itemCount !== 1 ? 's' : ''} selected
-              </span>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                {itemCount > 0 ? `${itemCount} item${itemCount !== 1 ? 's' : ''} selected` : 'Click to add items'}
+              </h2>
             </div>
             <OutfitCanvas />
           </div>
 
-          <div>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Saved Outfits</h2>
-              <span className="text-sm text-[var(--text-tertiary)]">
-                {outfits.length} outfit{outfits.length !== 1 ? 's' : ''}
-              </span>
+          <div className="lg:col-span-1 flex flex-col gap-4">
+            <div className="flex-1 min-h-0">
+              <WardrobePanel />
             </div>
+            
+            <div className="flex-shrink-0">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Saved Outfits</h3>
+                <span className="text-xs text-[var(--text-tertiary)]">
+                  {outfits.length}
+                </span>
+              </div>
 
-            {outfits.length === 0 ? (
-              <div className="p-8 text-center rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)]">
-                <div className="text-4xl mb-3">👔</div>
-                <p className="text-[var(--text-secondary)]">No saved outfits yet</p>
-                <p className="text-sm text-[var(--text-tertiary)] mt-1">
-                  Create your first outfit by selecting items from the canvas
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                {outfits.map((outfit) => (
-                  <OutfitCard
-                    key={outfit.id}
-                    outfit={outfit}
-                    onSelect={handleSelectOutfit}
-                    onDelete={deleteOutfit}
-                  />
-                ))}
-              </div>
-            )}
+              {outfits.length === 0 ? (
+                <div className="p-4 text-center rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="text-sm text-[var(--text-tertiary)]">No saved outfits</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {outfits.slice(0, 4).map((outfit) => (
+                    <OutfitCard
+                      key={outfit.id}
+                      outfit={outfit}
+                      onSelect={handleSelectOutfit}
+                      onDelete={deleteOutfit}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-
-        <WardrobeSelector />
 
         {showSaveModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
