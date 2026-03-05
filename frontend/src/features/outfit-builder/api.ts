@@ -45,7 +45,7 @@ export async function createOutfit(userId: string, input: OutfitCreateInput): Pr
 export async function updateOutfit(
   outfitId: string,
   userId: string,
-  updates: OutfitUpdateInput
+  updates: OutfitUpdateInput,
 ): Promise<Outfit> {
   const updateData: Record<string, unknown> = {};
   if (updates.name !== undefined) updateData.name = updates.name;

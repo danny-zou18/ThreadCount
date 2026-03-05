@@ -3,7 +3,19 @@ import { type OutfitSlot } from '../types';
 import { getItemImageUrl } from '../api';
 
 export function OutfitCanvas() {
-  const { canvas, setSelectedSlot, selectedSlot, removeFromSlot, topLayerIndex, swapTopLayer } = useOutfitBuilderStore();
+  const {
+    canvas,
+    setSelectedSlot,
+    selectedSlot,
+    removeFromSlot,
+    topLayerIndex,
+    swapTopLayer,
+    accessoryLeftLayerIndex,
+    accessoryRightLayerIndex,
+    swapAccessoryLeftLayer,
+    swapAccessoryRightLayer,
+    moveAccessory,
+  } = useOutfitBuilderStore();
 
   const handleSlotClick = (slot: OutfitSlot) => {
     setSelectedSlot(slot);
@@ -25,13 +37,20 @@ export function OutfitCanvas() {
         `}
       >
         {items.length === 0 ? (
-          <div className={`w-full h-full flex items-center justify-center ${isSelected ? 'bg-[var(--color-primary)]/10' : ''}`} />
+          <div
+            className={`w-full h-full flex items-center justify-center ${isSelected ? 'bg-[var(--color-primary)]/10' : ''}`}
+          />
         ) : (
           <div className="relative w-full h-full flex items-center justify-center">
             {inactiveItem && (
               <div
                 className="absolute h-full flex items-center justify-center p-2 opacity-30"
-                style={{ width: '45%', left: 'calc(50%)', transform: 'translateX(-50%)', zIndex: 0 }}
+                style={{
+                  width: '45%',
+                  left: 'calc(50%)',
+                  transform: 'translateX(-50%)',
+                  zIndex: 0,
+                }}
               >
                 <img
                   src={getItemImageUrl(inactiveItem.image_path) || ''}
@@ -43,7 +62,12 @@ export function OutfitCanvas() {
             {activeItem && (
               <div
                 className="absolute h-full flex items-center justify-center p-2"
-                style={{ width: '45%', left: 'calc(50%)', transform: 'translateX(-50%)', zIndex: 1 }}
+                style={{
+                  width: '45%',
+                  left: 'calc(50%)',
+                  transform: 'translateX(-50%)',
+                  zIndex: 1,
+                }}
               >
                 <img
                   src={getItemImageUrl(activeItem.image_path) || ''}
@@ -57,8 +81,17 @@ export function OutfitCanvas() {
                   }}
                   className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 opacity-0 hover:opacity-100 transition-opacity"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-3 w-3"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
               </div>
@@ -72,7 +105,12 @@ export function OutfitCanvas() {
                 className="absolute bottom-2 right-2 p-2 rounded-full bg-gray-800/70 text-white hover:bg-gray-700 transition-colors z-10"
                 title="Swap layer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
                   <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
                 </svg>
               </button>
@@ -111,23 +149,178 @@ export function OutfitCanvas() {
               }}
               className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 opacity-0 hover:opacity-100 transition-opacity"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-3 w-3"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
               </svg>
             </button>
           </div>
         ) : (
-          <div className={`w-full h-full flex items-center justify-center ${isSelected ? 'bg-[var(--color-primary)]/10' : ''}`} />
+          <div
+            className={`w-full h-full flex items-center justify-center ${isSelected ? 'bg-[var(--color-primary)]/10' : ''}`}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const getAccessoryPosition = (index: number) => {
+    const positions = [
+      { left: '50%', top: '15%' },
+      { left: '50%', top: '35%' },
+      { left: '50%', top: '55%' },
+      { left: '50%', top: '75%' },
+      { left: '50%', top: '95%' },
+    ];
+    return positions[index % positions.length];
+  };
+
+  const handleDragStart = (
+    e: React.DragEvent,
+    slot: 'accessoriesLeft' | 'accessoriesRight',
+    index: number
+  ) => {
+    e.dataTransfer.setData('slot', slot);
+    e.dataTransfer.setData('index', String(index));
+  };
+
+  const handleDrop = (
+    e: React.DragEvent,
+    toSlot: 'accessoriesLeft' | 'accessoriesRight'
+  ) => {
+    e.preventDefault();
+    const fromSlot = e.dataTransfer.getData('slot') as 'accessoriesLeft' | 'accessoriesRight';
+    const fromIndex = parseInt(e.dataTransfer.getData('index'), 10);
+    
+    if (fromSlot !== toSlot) {
+      moveAccessory(fromSlot, toSlot, fromIndex);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const renderAccessoriesSlot = (slot: 'accessoriesLeft' | 'accessoriesRight') => {
+    const isSelected = selectedSlot === slot;
+    const items = slot === 'accessoriesLeft' ? canvas.accessoriesLeft : canvas.accessoriesRight;
+    const activeIndex =
+      slot === 'accessoriesLeft' ? accessoryLeftLayerIndex : accessoryRightLayerIndex;
+    const swapLayer =
+      slot === 'accessoriesLeft' ? swapAccessoryLeftLayer : swapAccessoryRightLayer;
+    const showSwap = items.length > 1;
+
+    return (
+      <div
+        onClick={() => handleSlotClick(slot)}
+        onDrop={(e) => handleDrop(e, slot)}
+        onDragOver={handleDragOver}
+        className={`
+          relative flex items-center justify-center
+          transition-all duration-200 cursor-pointer
+          bg-[var(--bg-secondary)]/30 rounded-lg
+          h-full
+        `}
+      >
+        {items.length === 0 ? (
+          <div
+            className={`w-full h-full flex items-center justify-center ${isSelected ? 'bg-[var(--color-primary)]/10' : ''}`}
+          />
+        ) : (
+          <div className="relative w-full h-full">
+            {items.map((item, index) => {
+              const imageUrl = getItemImageUrl(item.image_path);
+              if (!imageUrl) return null;
+              const position = getAccessoryPosition(index);
+              if (!position) return null;
+              const isActive = index === activeIndex;
+
+              return (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, slot, index)}
+                  className="absolute flex items-center justify-center p-1 cursor-grab"
+                  style={{
+                    left: position.left,
+                    top: position.top,
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: isActive ? 10 : index + 1,
+                    width: '60%',
+                    height: '15%',
+                  }}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={item.name}
+                    className={`max-w-full max-h-full object-contain transition-all duration-200 ${isActive ? 'ring-2 ring-blue-500 ring-offset-1' : ''} ${!isActive ? 'opacity-50' : ''}`}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromSlot(slot, index);
+                    }}
+                    className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-500 text-white hover:bg-red-600 opacity-0 hover:opacity-100 transition-opacity text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+            {showSwap && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  swapLayer();
+                }}
+                className="absolute bottom-1 right-1 p-1.5 rounded-full bg-gray-800/70 text-white hover:bg-gray-700 transition-colors z-20"
+                title="Swap accessory"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                </svg>
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col">
-      {renderTopSlot()}
-      {renderSlot('bottom')}
-      {renderSlot('shoes')}
+    <div className="relative w-full h-full flex">
+      <div
+        className="w-1/4"
+        onDrop={(e) => handleDrop(e, 'accessoriesLeft')}
+        onDragOver={handleDragOver}
+      >
+        {renderAccessoriesSlot('accessoriesLeft')}
+      </div>
+      <div className="flex-1 flex flex-col">
+        {renderTopSlot()}
+        {renderSlot('bottom')}
+        {renderSlot('shoes')}
+      </div>
+      <div
+        className="w-1/4"
+        onDrop={(e) => handleDrop(e, 'accessoriesRight')}
+        onDragOver={handleDragOver}
+      >
+        {renderAccessoriesSlot('accessoriesRight')}
+      </div>
     </div>
   );
 }

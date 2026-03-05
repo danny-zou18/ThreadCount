@@ -47,7 +47,12 @@ export function OutfitBuilderPage() {
             <Button variant="ghost" onClick={handleNewOutfit} size="sm">
               New
             </Button>
-            <Button variant="primary" onClick={() => setShowSaveModal(true)} disabled={!hasItems} size="sm">
+            <Button
+              variant="primary"
+              onClick={() => setShowSaveModal(true)}
+              disabled={!hasItems}
+              size="sm"
+            >
               Save
             </Button>
           </div>
@@ -77,7 +82,12 @@ export function OutfitBuilderPage() {
                 <Button variant="ghost" onClick={() => setShowSaveModal(false)} className="flex-1">
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSave} disabled={isSaving} className="flex-1">
+                <Button
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="flex-1"
+                >
                   {isSaving ? 'Saving...' : 'Save'}
                 </Button>
               </div>

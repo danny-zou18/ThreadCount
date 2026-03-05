@@ -27,26 +27,32 @@ export interface OutfitUpdateInput {
   item_ids?: string[];
 }
 
-export type OutfitSlot = 'top' | 'bottom' | 'shoes';
+export type OutfitSlot = 'top' | 'bottom' | 'shoes' | 'accessoriesLeft' | 'accessoriesRight';
 
 export interface OutfitCanvasState {
   top: OutfitItem[];
   bottom: OutfitItem | null;
   shoes: OutfitItem | null;
+  accessoriesLeft: OutfitItem[];
+  accessoriesRight: OutfitItem[];
 }
 
-export const SLOT_ORDER: OutfitSlot[] = ['top', 'bottom', 'shoes'];
+export const SLOT_ORDER: OutfitSlot[] = ['top', 'bottom', 'shoes', 'accessoriesLeft', 'accessoriesRight'];
 
 export const SLOT_LABELS: Record<OutfitSlot, string> = {
   top: 'Top',
   bottom: 'Bottoms',
   shoes: 'Shoes',
+  accessoriesLeft: 'Accessories',
+  accessoriesRight: 'Accessories',
 };
 
 export const SLOT_CATEGORIES: Record<OutfitSlot, Category[]> = {
   top: ['tops', 'dresses', 'outerwear'],
   bottom: ['bottoms'],
   shoes: ['shoes'],
+  accessoriesLeft: ['accessories'],
+  accessoriesRight: ['accessories'],
 };
 
 export type MainCategory = 'top' | 'bottoms' | 'shoes' | 'accessories';
@@ -63,24 +69,8 @@ export const MAIN_CATEGORY_LABELS: Record<MainCategory, string> = {
 };
 
 export const SUB_CATEGORIES: Record<MainCategory, SubCategory[]> = {
-  top: [
-    't-shirts',
-    'tank-tops',
-    'dresses',
-  ],
-  bottoms: [
-    'jeans',
-    'dress-pants',
-  ],
-  shoes: [
-    'shoes',
-  ],
-  accessories: [
-    'hats',
-    'jewelry',
-    'bags',
-    'watches',
-    'sunglasses',
-    'other',
-  ],
+  top: ['t-shirts', 'tank-tops', 'dresses'],
+  bottoms: ['jeans', 'dress-pants'],
+  shoes: ['shoes'],
+  accessories: ['hats', 'jewelry', 'bags', 'watches', 'sunglasses', 'other'],
 };
