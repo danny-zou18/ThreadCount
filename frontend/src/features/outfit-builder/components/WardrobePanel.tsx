@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
 import { MAIN_CATEGORY_LABELS, type MainCategory, type OutfitItem } from '../types';
@@ -16,15 +16,17 @@ const SLOT_TO_MAIN: Record<string, MainCategory> = {
   top: 'top',
   bottom: 'bottoms',
   shoes: 'shoes',
+  accessoriesLeft: 'accessories',
+  accessoriesRight: 'accessories',
 };
 
-const CATEGORY_TO_SLOT: Record<Category, 'top' | 'bottom' | 'shoes'> = {
+const CATEGORY_TO_SLOT: Record<Category, 'top' | 'bottom' | 'shoes' | 'accessoriesLeft' | 'accessoriesRight'> = {
   tops: 'top',
   bottoms: 'bottom',
   dresses: 'top',
   outerwear: 'top',
   shoes: 'shoes',
-  accessories: 'shoes',
+  accessories: 'accessoriesLeft',
 };
 
 const MAIN_CATEGORIES: MainCategory[] = ['top', 'bottoms', 'shoes', 'accessories'];
@@ -39,17 +41,17 @@ const SUB_CATEGORIES: Record<MainCategory, string[]> = {
 const SUB_TO_CATEGORY: Record<string, Category[]> = {
   'T-shirts': ['tops'],
   'Tank tops': ['tops'],
-  'Dresses': ['dresses'],
-  'Outerwear': ['outerwear'],
-  'Jeans': ['bottoms'],
+  Dresses: ['dresses'],
+  Outerwear: ['outerwear'],
+  Jeans: ['bottoms'],
   'Dress pants': ['bottoms'],
-  'Shoes': ['shoes'],
-  'Hats': ['accessories'],
-  'Jewelry': ['accessories'],
-  'Bags': ['accessories'],
-  'Watches': ['accessories'],
-  'Sunglasses': ['accessories'],
-  'Other': ['accessories'],
+  Shoes: ['shoes'],
+  Hats: ['accessories'],
+  Jewelry: ['accessories'],
+  Bags: ['accessories'],
+  Watches: ['accessories'],
+  Sunglasses: ['accessories'],
+  Other: ['accessories'],
 };
 
 const MAIN_TO_CATEGORY: Record<MainCategory, Category[]> = {
@@ -66,15 +68,7 @@ export function WardrobePanel() {
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const [pendingItem, setPendingItem] = useState<OutfitItem | null>(null);
 
-  useEffect(() => {
-    if (selectedSlot) {
-      const main = SLOT_TO_MAIN[selectedSlot];
-      if (main) {
-        setSelectedMain(main);
-        setSelectedSub(null);
-      }
-    }
-  }, [selectedSlot]);
+  const effectiveMain = selectedSlot ? (SLOT_TO_MAIN[selectedSlot] ?? selectedMain) : selectedMain;
 
   const handleSelectMain = (main: MainCategory) => {
     setSelectedMain(main);
@@ -89,7 +83,20 @@ export function WardrobePanel() {
     return canvas.top.findIndex((item) => item.id === itemId);
   };
 
-  const handleSelectItem = (item: { id: string; name: string; category: Category; image_path: string | null }) => {
+  const getAccessoryLeftIndex = (itemId: string): number => {
+    return canvas.accessoriesLeft.findIndex((item) => item.id === itemId);
+  };
+
+  const getAccessoryRightIndex = (itemId: string): number => {
+    return canvas.accessoriesRight.findIndex((item) => item.id === itemId);
+  };
+
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    category: Category;
+    image_path: string | null;
+  }) => {
     const outfitItem: OutfitItem = {
       id: item.id,
       name: item.name,
@@ -98,7 +105,7 @@ export function WardrobePanel() {
     };
 
     const slot = CATEGORY_TO_SLOT[item.category];
-    
+
     if (slot === 'top') {
       const existingIndex = getTopItemIndex(item.id);
       if (existingIndex !== -1) {
@@ -110,6 +117,48 @@ export function WardrobePanel() {
         return;
       }
       addToSlot('top', outfitItem);
+    } else if (slot === 'accessoriesLeft') {
+      const existingLeft = getAccessoryLeftIndex(item.id);
+      const existingRight = getAccessoryRightIndex(item.id);
+      if (existingLeft !== -1) {
+        removeFromSlot('accessoriesLeft', existingLeft);
+        return;
+      }
+      if (existingRight !== -1) {
+        removeFromSlot('accessoriesRight', existingRight);
+        return;
+      }
+      const totalAccessories = canvas.accessoriesLeft.length + canvas.accessoriesRight.length;
+      if (totalAccessories >= 6) {
+        setPendingItem(outfitItem);
+        return;
+      }
+      if (canvas.accessoriesLeft.length <= canvas.accessoriesRight.length) {
+        addToSlot('accessoriesLeft', outfitItem);
+      } else {
+        addToSlot('accessoriesRight', outfitItem);
+      }
+    } else if (slot === 'accessoriesRight') {
+      const existingLeft = getAccessoryLeftIndex(item.id);
+      const existingRight = getAccessoryRightIndex(item.id);
+      if (existingLeft !== -1) {
+        removeFromSlot('accessoriesLeft', existingLeft);
+        return;
+      }
+      if (existingRight !== -1) {
+        removeFromSlot('accessoriesRight', existingRight);
+        return;
+      }
+      const totalAccessories = canvas.accessoriesLeft.length + canvas.accessoriesRight.length;
+      if (totalAccessories >= 6) {
+        setPendingItem(outfitItem);
+        return;
+      }
+      if (canvas.accessoriesRight.length <= canvas.accessoriesLeft.length) {
+        addToSlot('accessoriesRight', outfitItem);
+      } else {
+        addToSlot('accessoriesLeft', outfitItem);
+      }
     } else if (slot === 'bottom') {
       if (canvas.bottom?.id === item.id) {
         removeFromSlot('bottom');
@@ -152,23 +201,25 @@ export function WardrobePanel() {
     const inTop = canvas.top.some((item) => item.id === itemId);
     const inBottom = canvas.bottom?.id === itemId;
     const inShoes = canvas.shoes?.id === itemId;
-    return inTop || inBottom || inShoes;
+    const inAccessoriesLeft = canvas.accessoriesLeft.some((item) => item.id === itemId);
+    const inAccessoriesRight = canvas.accessoriesRight.some((item) => item.id === itemId);
+    return inTop || inBottom || inShoes || inAccessoriesLeft || inAccessoriesRight;
   };
 
   const getFilteredItems = () => {
-    if (!selectedMain) return wardrobeItems;
+    if (!effectiveMain) return wardrobeItems;
 
     if (selectedSub) {
       const categories = SUB_TO_CATEGORY[selectedSub] || [];
       return wardrobeItems.filter((item) => categories.includes(item.category));
     }
 
-    const categories = MAIN_TO_CATEGORY[selectedMain];
+    const categories = MAIN_TO_CATEGORY[effectiveMain];
     return wardrobeItems.filter((item) => categories.includes(item.category));
   };
 
   const filteredItems = getFilteredItems();
-  const subCategories = selectedMain ? SUB_CATEGORIES[selectedMain] : [];
+  const subCategories = effectiveMain ? SUB_CATEGORIES[effectiveMain] : [];
 
   return (
     <div className="flex flex-col h-full bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
@@ -179,9 +230,11 @@ export function WardrobePanel() {
             onClick={() => handleSelectMain(main)}
             className={`
               flex-1 py-2 text-sm font-medium transition-colors
-              ${selectedMain === main
-                ? 'text-[var(--accent)] border-b-2 border-[var(--accent)] bg-[var(--accent)]/5'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}
+              ${
+                effectiveMain === main
+                  ? 'text-[var(--accent)] border-b-2 border-[var(--accent)] bg-[var(--accent)]/5'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
+              }
             `}
           >
             {MAIN_CATEGORY_LABELS[main]}
@@ -189,15 +242,17 @@ export function WardrobePanel() {
         ))}
       </div>
 
-      {selectedMain && subCategories.length > 0 && (
+      {effectiveMain && subCategories.length > 0 && (
         <div className="flex gap-1 p-2 border-b border-[var(--border)] overflow-x-auto">
           <button
             onClick={() => setSelectedSub(null)}
             className={`
               px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors border
-              ${!selectedSub
-                ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
-                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'}
+              ${
+                !selectedSub
+                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'
+              }
             `}
           >
             All
@@ -208,9 +263,11 @@ export function WardrobePanel() {
               onClick={() => handleSelectSub(sub)}
               className={`
                 px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors border
-                ${selectedSub === sub
-                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'}
+                ${
+                  selectedSub === sub
+                    ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                    : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'
+                }
               `}
             >
               {sub}
@@ -237,9 +294,11 @@ export function WardrobePanel() {
                   onClick={() => handleSelectItem(item)}
                   className={`
                     flex flex-col items-center p-2 rounded-lg border transition-all
-                    ${inCanvas
-                      ? 'border-[var(--accent)] bg-[var(--accent)]/10'
-                      : 'border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--bg-hover)]'}
+                    ${
+                      inCanvas
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/10'
+                        : 'border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--bg-hover)]'
+                    }
                   `}
                 >
                   <div className="w-14 h-14 flex items-center justify-center mb-1">
@@ -258,9 +317,7 @@ export function WardrobePanel() {
                   <span className="text-xs text-[var(--text-secondary)] text-center truncate w-full">
                     {item.name}
                   </span>
-                  {inCanvas && (
-                    <span className="text-[10px] text-[var(--accent)]">Added</span>
-                  )}
+                  {inCanvas && <span className="text-[10px] text-[var(--accent)]">Added</span>}
                 </button>
               );
             })}
@@ -293,7 +350,9 @@ export function WardrobePanel() {
                           />
                         )}
                       </div>
-                      <span className="text-xs text-[var(--text-secondary)] truncate">{topItem.name}</span>
+                      <span className="text-xs text-[var(--text-secondary)] truncate">
+                        {topItem.name}
+                      </span>
                     </button>
                   ))}
                 </div>

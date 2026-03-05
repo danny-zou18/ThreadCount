@@ -12,11 +12,19 @@ interface OutfitBuilderState {
   error: string | null;
   selectedSlot: OutfitSlot | null;
   topLayerIndex: number;
+  accessoryLeftLayerIndex: number;
+  accessoryRightLayerIndex: number;
 
   fetchOutfits: () => Promise<void>;
   addToSlot: (slot: OutfitSlot, item: OutfitItem) => void;
   setCanvasItem: (slot: OutfitSlot, item: OutfitItem) => void;
   removeFromSlot: (slot: OutfitSlot, index?: number) => void;
+  moveAccessory: (
+    fromSlot: 'accessoriesLeft' | 'accessoriesRight',
+    toSlot: 'accessoriesLeft' | 'accessoriesRight',
+    fromIndex: number,
+    toIndex?: number
+  ) => void;
   clearCanvas: () => void;
   setSelectedSlot: (slot: OutfitSlot | null) => void;
   saveOutfit: (name: string) => Promise<void>;
@@ -24,6 +32,8 @@ interface OutfitBuilderState {
   deleteOutfit: (outfitId: string) => Promise<void>;
   clearError: () => void;
   swapTopLayer: () => void;
+  swapAccessoryLeftLayer: () => void;
+  swapAccessoryRightLayer: () => void;
 }
 
 export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
@@ -33,11 +43,15 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     top: [],
     bottom: null,
     shoes: null,
+    accessoriesLeft: [],
+    accessoriesRight: [],
   },
   isLoading: false,
   error: null,
   selectedSlot: null,
   topLayerIndex: 0,
+  accessoryLeftLayerIndex: 0,
+  accessoryRightLayerIndex: 0,
 
   fetchOutfits: async () => {
     const user = useAuthStore.getState().user;
@@ -68,6 +82,20 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
           topLayerIndex: 0,
         };
       }
+      if (slot === 'accessoriesLeft') {
+        return {
+          canvas: { ...state.canvas, accessoriesLeft: [...state.canvas.accessoriesLeft, item] },
+          selectedSlot: null,
+          accessoryLeftLayerIndex: 0,
+        };
+      }
+      if (slot === 'accessoriesRight') {
+        return {
+          canvas: { ...state.canvas, accessoriesRight: [...state.canvas.accessoriesRight, item] },
+          selectedSlot: null,
+          accessoryRightLayerIndex: 0,
+        };
+      }
       return {
         canvas: { ...state.canvas, [slot]: item },
         selectedSlot: null,
@@ -84,6 +112,20 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
           topLayerIndex: 0,
         };
       }
+      if (slot === 'accessoriesLeft') {
+        return {
+          canvas: { ...state.canvas, accessoriesLeft: [item] },
+          selectedSlot: null,
+          accessoryLeftLayerIndex: 0,
+        };
+      }
+      if (slot === 'accessoriesRight') {
+        return {
+          canvas: { ...state.canvas, accessoriesRight: [item] },
+          selectedSlot: null,
+          accessoryRightLayerIndex: 0,
+        };
+      }
       return {
         canvas: { ...state.canvas, [slot]: item },
         selectedSlot: null,
@@ -98,7 +140,57 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
         newTop.splice(index, 1);
         return { canvas: { ...state.canvas, top: newTop }, topLayerIndex: 0 };
       }
+      if (slot === 'accessoriesLeft' && index !== undefined) {
+        const newAccessories = [...state.canvas.accessoriesLeft];
+        newAccessories.splice(index, 1);
+        return { canvas: { ...state.canvas, accessoriesLeft: newAccessories }, accessoryLeftLayerIndex: 0 };
+      }
+      if (slot === 'accessoriesRight' && index !== undefined) {
+        const newAccessories = [...state.canvas.accessoriesRight];
+        newAccessories.splice(index, 1);
+        return { canvas: { ...state.canvas, accessoriesRight: newAccessories }, accessoryRightLayerIndex: 0 };
+      }
       return { canvas: { ...state.canvas, [slot]: null } };
+    });
+  },
+
+  moveAccessory: (
+    fromSlot: 'accessoriesLeft' | 'accessoriesRight',
+    toSlot: 'accessoriesLeft' | 'accessoriesRight',
+    fromIndex: number,
+    _toIndex?: number
+  ) => {
+    set((state) => {
+      const fromItems = fromSlot === 'accessoriesLeft' ? state.canvas.accessoriesLeft : state.canvas.accessoriesRight;
+      const toItems = toSlot === 'accessoriesLeft' ? state.canvas.accessoriesLeft : state.canvas.accessoriesRight;
+      
+      const item = fromItems[fromIndex];
+      if (!item) return state;
+
+      const newFromItems = [...fromItems];
+      newFromItems.splice(fromIndex, 1);
+
+      const newToItems = [...toItems, item];
+
+      if (fromSlot === 'accessoriesLeft' && toSlot === 'accessoriesRight') {
+        return {
+          canvas: {
+            ...state.canvas,
+            accessoriesLeft: newFromItems,
+            accessoriesRight: newToItems,
+          },
+        };
+      }
+      if (fromSlot === 'accessoriesRight' && toSlot === 'accessoriesLeft') {
+        return {
+          canvas: {
+            ...state.canvas,
+            accessoriesLeft: newToItems,
+            accessoriesRight: newFromItems,
+          },
+        };
+      }
+      return state;
     });
   },
 
@@ -108,9 +200,13 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
         top: [],
         bottom: null,
         shoes: null,
+        accessoriesLeft: [],
+        accessoriesRight: [],
       },
       currentOutfit: null,
       topLayerIndex: 0,
+      accessoryLeftLayerIndex: 0,
+      accessoryRightLayerIndex: 0,
     });
   },
 
@@ -130,6 +226,8 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
       ...canvas.top.map((item) => item.id),
       ...(canvas.bottom ? [canvas.bottom.id] : []),
       ...(canvas.shoes ? [canvas.shoes.id] : []),
+      ...canvas.accessoriesLeft.map((item) => item.id),
+      ...canvas.accessoriesRight.map((item) => item.id),
     ];
 
     if (itemIds.length === 0) {
@@ -168,40 +266,51 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
         top: [],
         bottom: null,
         shoes: null,
+        accessoriesLeft: [],
+        accessoriesRight: [],
       };
 
-      const categoryToSlot: Record<Category, OutfitSlot> = {
-        tops: 'top',
-        dresses: 'top',
-        outerwear: 'top',
-        bottoms: 'bottom',
-        shoes: 'shoes',
-        accessories: 'top',
-      };
-
+      let accessoryToggle = false;
       for (const item of items) {
-        const slot = categoryToSlot[item.category as Category];
-        if (slot === 'top') {
+        const category = item.category as Category;
+        if (category === 'tops' || category === 'dresses' || category === 'outerwear') {
           canvas.top.push({
             id: item.id,
             name: item.name,
-            category: item.category as Category,
+            category,
             image_path: item.image_path,
           });
-        } else if (slot === 'bottom' && !canvas.bottom) {
+        } else if (category === 'bottoms' && !canvas.bottom) {
           canvas.bottom = {
             id: item.id,
             name: item.name,
-            category: item.category as Category,
+            category,
             image_path: item.image_path,
           };
-        } else if (slot === 'shoes' && !canvas.shoes) {
+        } else if (category === 'shoes' && !canvas.shoes) {
           canvas.shoes = {
             id: item.id,
             name: item.name,
-            category: item.category as Category,
+            category,
             image_path: item.image_path,
           };
+        } else if (category === 'accessories') {
+          if (accessoryToggle) {
+            canvas.accessoriesLeft.push({
+              id: item.id,
+              name: item.name,
+              category,
+              image_path: item.image_path,
+            });
+          } else {
+            canvas.accessoriesRight.push({
+              id: item.id,
+              name: item.name,
+              category,
+              image_path: item.image_path,
+            });
+          }
+          accessoryToggle = !accessoryToggle;
         }
       }
 
@@ -243,6 +352,20 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     const { canvas, topLayerIndex } = get();
     if (canvas.top.length > 1) {
       set({ topLayerIndex: topLayerIndex === 0 ? 1 : 0 });
+    }
+  },
+
+  swapAccessoryLeftLayer: () => {
+    const { canvas, accessoryLeftLayerIndex } = get();
+    if (canvas.accessoriesLeft.length > 1) {
+      set({ accessoryLeftLayerIndex: accessoryLeftLayerIndex === 0 ? 1 : 0 });
+    }
+  },
+
+  swapAccessoryRightLayer: () => {
+    const { canvas, accessoryRightLayerIndex } = get();
+    if (canvas.accessoriesRight.length > 1) {
+      set({ accessoryRightLayerIndex: accessoryRightLayerIndex === 0 ? 1 : 0 });
     }
   },
 }));

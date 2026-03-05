@@ -34,7 +34,12 @@ export function WardrobeSelector() {
   const categories = SLOT_CATEGORIES[selectedSlot];
   const filteredItems = wardrobeItems.filter((item) => categories.includes(item.category));
 
-  const handleSelectItem = (item: { id: string; name: string; category: Category; image_path: string | null }) => {
+  const handleSelectItem = (item: {
+    id: string;
+    name: string;
+    category: Category;
+    image_path: string | null;
+  }) => {
     const outfitItem: OutfitItem = {
       id: item.id,
       name: item.name,
@@ -57,8 +62,17 @@ export function WardrobeSelector() {
             onClick={handleClose}
             className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
         </div>
