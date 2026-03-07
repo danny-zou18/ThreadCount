@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '@/features/auth/store';
 import { Button } from '@/shared/ui/Button';
+import { Navigation } from '@/shared/ui/Navigation';
 import { getAvatar, processAvatar } from '@/features/profile/api';
 import { supabase } from '@/shared/api/supabase';
 
 export function DashboardPage() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [avatar, setAvatar] = useState<{
     original_photo_path?: string | null;
     model_canvas_path?: string | null;
@@ -28,6 +29,7 @@ export function DashboardPage() {
     if (!user) return;
     setIsGenerating(true);
     setError(null);
+
     try {
       await processAvatar(user.id);
       await loadAvatar();
@@ -44,117 +46,112 @@ export function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] p-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header with rule */}
-        <div className="flex items-end justify-between mb-4">
-          <h1
-            className="text-4xl text-[var(--text-primary)]"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Dashboard
-          </h1>
-          <Button variant="ghost" size="sm" onClick={logout}>
-            Log out
-          </Button>
-        </div>
-        <div className="border-t border-[var(--border-strong)] mb-12" />
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-[var(--bg)] p-8 pt-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-4 flex items-end justify-between">
+            <h1
+              className="text-4xl text-[var(--text-primary)]"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
+              Dashboard
+            </h1>
+          </div>
+          <div className="mb-12 border-t border-[var(--border-strong)]" />
 
-        {/* Welcome */}
-        <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-8">
-          Welcome back
-          {user?.email ? (
-            <>
-              ,{' '}
-              <span
-                className="text-[var(--text-primary)]"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                {user.email}
-              </span>
-            </>
-          ) : (
-            ''
-          )}
-          . Your wardrobe awaits.
-        </p>
+          <p className="mb-8 text-sm leading-relaxed text-[var(--text-secondary)]">
+            Welcome back
+            {user?.email ? (
+              <>
+                ,{' '}
+                <span
+                  className="text-[var(--text-primary)]"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  {user.email}
+                </span>
+              </>
+            ) : null}
+            . Your wardrobe awaits.
+          </p>
 
-        {/* Avatar Section */}
-        <div className="bg-[var(--bg-elevated)] border border-[var(--border)] p-6 mb-6">
-          <h2
-            className="text-xl text-[var(--text-primary)] mb-4"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Your Avatar
-          </h2>
+          <div className="mb-6 border border-[var(--border)] bg-[var(--bg-elevated)] p-6">
+            <h2
+              className="mb-4 text-xl text-[var(--text-primary)]"
+              style={{ fontFamily: 'var(--font-serif)' }}
+            >
+              Your Avatar
+            </h2>
 
-          {error && (
-            <div className="mb-4 p-3 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] rounded text-sm text-[var(--error)]">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="mb-4 rounded border border-[var(--error)] bg-[var(--error)] bg-opacity-10 p-3 text-sm text-[var(--error)]">
+                {error}
+              </div>
+            )}
 
-          {avatar ? (
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                {/* Original Photo */}
-                {avatar.original_photo_path && (
-                  <div>
-                    <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
-                      Original
-                    </p>
-                    <div className="w-32 h-40 rounded-lg overflow-hidden bg-[var(--bg)]">
-                      <img
-                        src={getAvatarUrl(avatar.original_photo_path)}
-                        alt="Original"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Model Canvas */}
-                <div>
-                  <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
-                    Model Canvas
-                  </p>
-                  {avatar.model_canvas_path ? (
-                    <div className="w-32 h-40 rounded-lg overflow-hidden bg-[var(--bg)]">
-                      <img
-                        src={getAvatarUrl(avatar.model_canvas_path)}
-                        alt="Model Canvas"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-32 h-40 rounded-lg bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center">
-                      <span className="text-xs text-[var(--text-tertiary)]">
-                        {avatar.model_status === 'processing' ? 'Generating...' : 'Not generated'}
-                      </span>
+            {avatar ? (
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  {avatar.original_photo_path && (
+                    <div>
+                      <p className="mb-2 text-xs uppercase tracking-wider text-[var(--text-tertiary)]">
+                        Original
+                      </p>
+                      <div className="h-40 w-32 overflow-hidden rounded-lg bg-[var(--bg)]">
+                        <img
+                          src={getAvatarUrl(avatar.original_photo_path)}
+                          alt="Original"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                     </div>
                   )}
+
+                  <div>
+                    <p className="mb-2 text-xs uppercase tracking-wider text-[var(--text-tertiary)]">
+                      Model Canvas
+                    </p>
+                    {avatar.model_canvas_path ? (
+                      <div className="h-40 w-32 overflow-hidden rounded-lg bg-[var(--bg)]">
+                        <img
+                          src={getAvatarUrl(avatar.model_canvas_path)}
+                          alt="Model Canvas"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-40 w-32 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--border)]">
+                        <span className="text-xs text-[var(--text-tertiary)]">
+                          {avatar.model_status === 'processing' ? 'Generating...' : 'Not generated'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-[var(--text-tertiary)]">
+                      Status: <span className="uppercase">{avatar.model_status || 'pending'}</span>
+                    </p>
+                    <Button size="sm" onClick={handleRegenerate} disabled={isGenerating}>
+                      {isGenerating ? 'Generating...' : 'Regenerate Avatar'}
+                    </Button>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <p className="text-xs text-[var(--text-tertiary)]">
-                  Status: <span className="uppercase">{avatar.model_status || 'pending'}</span>
+            ) : (
+              <div className="py-8 text-center">
+                <p className="mb-4 text-sm text-[var(--text-secondary)]">
+                  You haven't uploaded an avatar yet.
                 </p>
-                <Button size="sm" onClick={handleRegenerate} disabled={isGenerating}>
-                  {isGenerating ? 'Generating...' : 'Regenerate Avatar'}
+                <Button onClick={() => (window.location.href = '/onboarding')}>
+                  Set Up Avatar
                 </Button>
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-sm text-[var(--text-secondary)] mb-4">
-                You haven't uploaded an avatar yet.
-              </p>
-              <Button onClick={() => (window.location.href = '/onboarding')}>Set Up Avatar</Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useWardrobeStore } from '@/features/wardrobe/store';
 import { OutfitCanvas } from '../components/OutfitCanvas';
 import { WardrobePanel } from '../components/WardrobePanel';
 import { Button } from '@/shared/ui/Button';
+import { Navigation } from '@/shared/ui/Navigation';
 
 export function OutfitBuilderPage() {
   const { fetchOutfits, saveOutfit, clearCanvas, canvas } = useOutfitBuilderStore();
@@ -39,28 +40,24 @@ export function OutfitBuilderPage() {
   return (
     <div className="h-screen bg-[var(--bg-primary)] p-4">
       <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">Outfit Builder</h1>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={handleNewOutfit} size="sm">
-              New
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => setShowSaveModal(true)}
-              disabled={!hasItems}
-              size="sm"
-            >
-              Save
-            </Button>
-          </div>
-        </div>
+        <Navigation />
 
         <div className="flex-1 grid grid-cols-[1.5fr_1fr] gap-4 min-h-0">
-          <div className="bg-gray-100 rounded-lg overflow-hidden">
+          <div className="relative bg-gray-100 rounded-lg overflow-hidden">
             <OutfitCanvas />
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              <Button variant="secondary" onClick={handleNewOutfit} size="sm">
+                New
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => setShowSaveModal(true)}
+                disabled={!hasItems}
+                size="sm"
+              >
+                Save
+              </Button>
+            </div>
           </div>
           <div className="min-h-0 overflow-hidden">
             <WardrobePanel />
