@@ -2,20 +2,25 @@ import { type InputHTMLAttributes, forwardRef } from 'react';
 import { clsx } from 'clsx';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  errorClassName?: string;
   label?: string;
+  labelClassName?: string;
   error?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className, id, ...props }, ref) => {
+  ({ label, error, className, errorClassName, id, labelClassName, ...props }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
 
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         {label && (
           <label
             htmlFor={inputId}
-            className="text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]"
+            className={clsx(
+              'text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--text-secondary)]',
+              labelClassName,
+            )}
           >
             {label}
           </label>
@@ -24,13 +29,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={clsx(
-            'w-full bg-transparent px-0 py-2 text-sm text-[var(--text-primary)]',
-            'border-b border-[var(--border)]',
-            'placeholder:text-[var(--text-tertiary)]',
-            'focus:outline-none focus:border-[var(--accent)]',
+            'w-full border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)]',
+            'placeholder:text-[var(--text-muted)]',
+            'focus:outline-none focus:border-[var(--border-strong)] focus:ring-1 focus:ring-[var(--border-strong)]',
             'disabled:opacity-40 disabled:cursor-not-allowed',
             'transition-colors duration-200',
-            error && 'border-[var(--error)] focus:border-[var(--error)]',
+            error && 'border-[var(--border-strong)] focus:border-[var(--border-strong)]',
             className,
           )}
           aria-invalid={error ? 'true' : undefined}
@@ -38,7 +42,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="text-xs text-[var(--error)]" role="alert">
+          <p
+            id={`${inputId}-error`}
+            className={clsx(
+              'text-[11px] uppercase tracking-[0.18em] text-[var(--text-primary)]',
+              errorClassName,
+            )}
+            role="alert"
+          >
             {error}
           </p>
         )}

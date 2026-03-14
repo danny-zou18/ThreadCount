@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
 import { useWardrobeStore } from '../store';
 import { CATEGORY_LABELS, CATEGORIES, type Category } from '../types';
 import { removeBackground, analyzeImage } from '../api';
 import { useAuthStore } from '@/features/auth/store';
+import { WardrobeBadgeList } from './WardrobeBadgeList';
+import { WardrobeModalFrame } from './WardrobeModalFrame';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -24,6 +27,8 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [colors, setColors] = useState<string[]>([]);
   const [seasons, setSeasons] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const selectClassName =
+    'w-full border border-[var(--border-strong)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]';
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -175,208 +180,181 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg)] w-full max-w-lg rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2
-              className="text-2xl text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Add Item
-            </h2>
-            <button
-              onClick={handleClose}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+    <WardrobeModalFrame
+      description="Upload a clean product image, review the AI metadata, and file the piece into your archive."
+      onClose={handleClose}
+      title="Add Item"
+    >
+      {error && (
+        <div
+          className="mb-5 border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 text-sm text-[var(--text-primary)]"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
 
-          {error && (
-            <div className="mb-4 p-3 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] rounded text-sm text-[var(--error)]">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {!preview ? (
-              <div
-                className={clsx(
-                  'border-2 border-dashed rounded-lg p-8 text-center transition-colors mb-6',
-                  'border-[var(--border)] hover:border-[var(--accent)] cursor-pointer',
-                )}
-                onClick={() => inputRef.current?.click()}
-                onDrop={handleDrop}
-                onDragOver={(e) => e.preventDefault()}
-              >
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-                <div className="mb-4">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <section className="space-y-4">
+            <div
+              aria-busy={isProcessing}
+              className="relative min-h-[22rem] border border-[var(--border-strong)] bg-[var(--bg-elevated)]"
+            >
+              {!preview ? (
+                <div
+                  className={clsx(
+                    'flex min-h-[22rem] cursor-pointer flex-col items-center justify-center border-2 border-dashed border-[var(--border)] px-6 text-center transition-colors hover:border-[var(--border-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
+                  )}
+                  onClick={() => inputRef.current?.click()}
+                  onDrop={handleDrop}
+                  onDragOver={(e) => e.preventDefault()}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      inputRef.current?.click();
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <input
+                    ref={inputRef}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    type="file"
+                  />
                   <svg
-                    className="w-10 h-10 mx-auto text-[var(--text-tertiary)]"
+                    className="h-12 w-12 text-[var(--text-muted)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={1.5}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
+                  <p className="mt-5 text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+                    Drop image or browse
+                  </p>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-[var(--text-secondary)]">
+                    Use a clean front-facing item photo. JPG and PNG files up to 10MB are supported.
+                  </p>
+                  <p className="mt-4 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    AI extracts colors, seasons, and tags automatically
+                  </p>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] mb-1">
-                  Drop your photo here or click to browse
-                </p>
-                <p className="text-xs text-[var(--text-tertiary)]">JPG, PNG up to 10MB</p>
-                <p className="text-xs text-[var(--accent)] mt-2">
-                  AI will auto-detect colors, seasons & tags
-                </p>
-              </div>
-            ) : (
-              <div className="relative mb-6">
-                <div className="flex justify-center">
-                  <img src={preview} alt="Preview" className="max-h-64 w-auto object-contain" />
-                </div>
-                {isProcessing && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2"></div>
-                      <p className="text-white text-sm">{processingProgress}</p>
+              ) : (
+                <>
+                  <div className="flex min-h-[22rem] items-center justify-center bg-[var(--bg-muted)] p-6">
+                    <img
+                      alt="Wardrobe item preview"
+                      className="max-h-80 w-auto object-contain"
+                      src={preview}
+                    />
+                  </div>
+                  {isProcessing ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[color:rgba(17,17,17,0.76)] p-6 text-center text-[var(--text-inverse)]">
+                      <div className="space-y-3">
+                        <div className="mx-auto h-12 w-12 animate-spin border-2 border-[var(--text-inverse)] border-t-transparent" />
+                        <p className="text-[11px] uppercase tracking-[0.2em]">
+                          {processingProgress}
+                        </p>
+                      </div>
                     </div>
+                  ) : null}
+                  <div className="absolute left-3 top-3 border border-[var(--border-strong)] bg-[var(--surface-inverse)] px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--text-inverse)]">
+                    {processedImagePath ? 'Ready to save' : 'Image selected'}
                   </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleRemove}
-                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[var(--bg-elevated)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors z-20"
-                  disabled={isProcessing}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-                {!isProcessing && processedImagePath && (
-                  <div className="absolute bottom-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded z-20">
-                    Ready to save
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="e.g., Blue Denim Jacket"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="category"
-                  className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                >
-                  Category
-                </label>
-                <select
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as Category)}
-                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {CATEGORY_LABELS[cat]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {(colors.length > 0 || seasons.length > 0) && (
-                <div className="flex flex-wrap gap-2">
-                  {colors.map((color) => (
-                    <span
-                      key={color}
-                      className="px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-xs rounded"
-                    >
-                      {color}
-                    </span>
-                  ))}
-                  {seasons.map((season) => (
-                    <span
-                      key={season}
-                      className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded"
-                    >
-                      {season}
-                    </span>
-                  ))}
-                </div>
+                  <button
+                    className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center border border-[var(--border-strong)] bg-[var(--bg)] text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-inverse)] hover:text-[var(--text-inverse)] focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]"
+                    disabled={isProcessing}
+                    onClick={handleRemove}
+                    type="button"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        d="M6 18L18 6M6 6l12 12"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                      />
+                    </svg>
+                  </button>
+                </>
               )}
-
-              <div>
-                <label
-                  htmlFor="labels"
-                  className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                >
-                  Tags (comma-separated)
-                </label>
-                <input
-                  id="labels"
-                  type="text"
-                  value={labels}
-                  onChange={(e) => setLabels(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                  placeholder="e.g., casual, blue, summer"
-                />
-              </div>
             </div>
+          </section>
 
-            <div className="flex gap-3 mt-6">
-              <Button type="button" variant="ghost" className="flex-1" onClick={handleClose}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                disabled={!processedImagePath || !name.trim() || isLoading || isProcessing}
+          <section className="space-y-4">
+            <Input
+              className="border-[var(--border-strong)] bg-[var(--bg-elevated)]"
+              id="name"
+              label="Name"
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Denim Jacket"
+              required
+              value={name}
+            />
+
+            <div className="space-y-2">
+              <label
+                className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--text-secondary)]"
+                htmlFor="category"
               >
-                {isProcessing ? 'Processing...' : isLoading ? 'Adding...' : 'Add Item'}
-              </Button>
+                Category
+              </label>
+              <select
+                className={selectClassName}
+                id="category"
+                onChange={(e) => setCategory(e.target.value as Category)}
+                value={category}
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </option>
+                ))}
+              </select>
             </div>
-          </form>
+
+            <Input
+              className="border-[var(--border-strong)] bg-[var(--bg-elevated)]"
+              id="labels"
+              label="Tags"
+              onChange={(e) => setLabels(e.target.value)}
+              placeholder="e.g., tailored, daywear, cotton"
+              value={labels}
+            />
+
+            <div className="border border-[var(--border)] bg-[var(--bg-elevated)] p-4">
+              <p className="eyebrow text-[var(--text-muted)]">AI metadata</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+                Auto-detected details stay editable through the item record after upload.
+              </p>
+              <WardrobeBadgeList className="mt-4" label="Colors" values={colors} />
+              <WardrobeBadgeList className="mt-4" label="Seasons" values={seasons} />
+            </div>
+          </section>
         </div>
-      </div>
-    </div>
+
+        <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:justify-end">
+          <Button className="sm:min-w-36" onClick={handleClose} type="button" variant="secondary">
+            Cancel
+          </Button>
+          <Button
+            className="sm:min-w-36"
+            disabled={!processedImagePath || !name.trim() || isLoading || isProcessing}
+            type="submit"
+          >
+            {isProcessing ? 'Processing...' : isLoading ? 'Adding...' : 'Add Item'}
+          </Button>
+        </div>
+      </form>
+    </WardrobeModalFrame>
   );
 }
