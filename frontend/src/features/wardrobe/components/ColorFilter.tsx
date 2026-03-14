@@ -1,3 +1,4 @@
+import { COMMON_COLORS } from '../types';
 import { clsx } from 'clsx';
 
 interface ColorFilterProps {
@@ -38,20 +39,33 @@ export function ColorFilter({ selectedColors, onColorChange }: ColorFilterProps)
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {Object.entries(COLOR_MAP).map(([name, hex]) => (
+    <div
+      aria-label="Filter wardrobe by color"
+      className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4"
+      role="group"
+    >
+      {COMMON_COLORS.map((name) => (
         <button
           key={name}
+          aria-label={`Filter by ${name}`}
+          aria-pressed={selectedColors.includes(name)}
+          className={clsx(
+            'flex min-h-12 items-center gap-3 border px-3 py-2 text-left transition-colors',
+            selectedColors.includes(name)
+              ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
+              : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+          )}
           onClick={() => toggleColor(name)}
           title={name}
-          className={clsx(
-            'w-6 h-6 rounded-full border-2 transition-all',
-            selectedColors.includes(name)
-              ? 'border-[var(--text-primary)] scale-110'
-              : 'border-transparent hover:scale-105',
-          )}
-          style={{ backgroundColor: hex }}
-        />
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+            className="h-5 w-5 border border-[var(--border-strong)]"
+            style={{ backgroundColor: COLOR_MAP[name] }}
+          />
+          <span className="text-[11px] font-medium uppercase tracking-[0.18em]">{name}</span>
+        </button>
       ))}
     </div>
   );

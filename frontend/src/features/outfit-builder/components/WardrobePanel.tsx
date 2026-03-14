@@ -1,95 +1,72 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, Sparkles } from 'lucide-react';
 import { useOutfitBuilderStore } from '../store';
+import {
+  MAIN_CATEGORY_LABELS,
+  type OutfitItem,
+  type OutfitSlot,
+} from '../types';
+import { getItemImageUrl } from '../api';
 import { useWardrobeStore } from '@/features/wardrobe/store';
-import { MAIN_CATEGORY_LABELS, type MainCategory, type OutfitItem } from '../types';
-import { type Category } from '@/features/wardrobe/types';
-import { supabase } from '@/shared/api/supabase';
-import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
+import {
+  CATEGORY_TO_SLOT,
+  MAIN_CATEGORIES,
+  MAIN_TO_CATEGORY,
+  SLOT_TO_MAIN,
+  SUB_CATEGORIES,
+  SUB_TO_CATEGORY,
+  type MainCategory,
+} from './panel/panelConfig';
+import { ReplaceModal } from './panel/ReplaceModal';
+import type { Category } from '@/features/wardrobe/types';
 
-function getItemImageUrl(path: string | null): string | null {
-  if (!path) return null;
-  const { data } = supabase.storage.from('wardrobe').getPublicUrl(path);
-  return data.publicUrl;
+function formatSlotLabel(slot: OutfitSlot | null) {
+  if (!slot) return 'No focused zone';
+  if (slot === 'accessoriesLeft') return 'Left accessory rail';
+  if (slot === 'accessoriesRight') return 'Right accessory rail';
+  return slot === 'bottom' ? 'Bottom zone' : `${MAIN_CATEGORY_LABELS[SLOT_TO_MAIN[slot]]} zone`;
 }
 
-const SLOT_TO_MAIN: Record<string, MainCategory> = {
-  top: 'top',
-  bottom: 'bottoms',
-  shoes: 'shoes',
-  accessoriesLeft: 'accessories',
-  accessoriesRight: 'accessories',
-};
-
-const CATEGORY_TO_SLOT: Record<Category, 'top' | 'bottom' | 'shoes' | 'accessoriesLeft' | 'accessoriesRight'> = {
-  tops: 'top',
-  bottoms: 'bottom',
-  dresses: 'top',
-  outerwear: 'top',
-  shoes: 'shoes',
-  accessories: 'accessoriesLeft',
-};
-
-const MAIN_CATEGORIES: MainCategory[] = ['top', 'bottoms', 'shoes', 'accessories'];
-
-const SUB_CATEGORIES: Record<MainCategory, string[]> = {
-  top: ['T-shirts', 'Tank tops', 'Dresses', 'Outerwear'],
-  bottoms: ['Jeans', 'Dress pants'],
-  shoes: ['Shoes'],
-  accessories: ['Hats', 'Jewelry', 'Bags', 'Watches', 'Sunglasses', 'Other'],
-};
-
-const SUB_TO_CATEGORY: Record<string, Category[]> = {
-  'T-shirts': ['tops'],
-  'Tank tops': ['tops'],
-  Dresses: ['dresses'],
-  Outerwear: ['outerwear'],
-  Jeans: ['bottoms'],
-  'Dress pants': ['bottoms'],
-  Shoes: ['shoes'],
-  Hats: ['accessories'],
-  Jewelry: ['accessories'],
-  Bags: ['accessories'],
-  Watches: ['accessories'],
-  Sunglasses: ['accessories'],
-  Other: ['accessories'],
-};
-
-const MAIN_TO_CATEGORY: Record<MainCategory, Category[]> = {
-  top: ['tops', 'dresses', 'outerwear'],
-  bottoms: ['bottoms'],
-  shoes: ['shoes'],
-  accessories: ['accessories'],
-};
-
 export function WardrobePanel() {
-  const { addToSlot, removeFromSlot, canvas, selectedSlot } = useOutfitBuilderStore();
-  const { items: wardrobeItems } = useWardrobeStore();
+  const { addToSlot, canvas, removeFromSlot, selectedSlot } = useOutfitBuilderStore();
+  const { items: wardrobeItems, isLoading } = useWardrobeStore();
   const [selectedMain, setSelectedMain] = useState<MainCategory | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const [pendingItem, setPendingItem] = useState<OutfitItem | null>(null);
 
-  const effectiveMain = selectedSlot ? (SLOT_TO_MAIN[selectedSlot] ?? selectedMain) : selectedMain;
+  const effectiveMain = selectedSlot ? SLOT_TO_MAIN[selectedSlot] : selectedMain;
+  const subCategories = effectiveMain ? SUB_CATEGORIES[effectiveMain] : [];
+
+  useEffect(() => {
+    setSelectedSub(null);
+  }, [selectedSlot]);
+
+  const filteredItems = useMemo(() => {
+    if (!effectiveMain) {
+      return wardrobeItems;
+    }
+
+    if (selectedSub) {
+      const categories = SUB_TO_CATEGORY[selectedSub] || [];
+      return wardrobeItems.filter((item) => categories.includes(item.category));
+    }
+
+    const categories = MAIN_TO_CATEGORY[effectiveMain];
+    return wardrobeItems.filter((item) => categories.includes(item.category));
+  }, [effectiveMain, selectedSub, wardrobeItems]);
 
   const handleSelectMain = (main: MainCategory) => {
     setSelectedMain(main);
     setSelectedSub(null);
   };
 
-  const handleSelectSub = (sub: string) => {
-    setSelectedSub(sub);
-  };
-
-  const getTopItemIndex = (itemId: string): number => {
-    return canvas.top.findIndex((item) => item.id === itemId);
-  };
-
-  const getAccessoryLeftIndex = (itemId: string): number => {
-    return canvas.accessoriesLeft.findIndex((item) => item.id === itemId);
-  };
-
-  const getAccessoryRightIndex = (itemId: string): number => {
-    return canvas.accessoriesRight.findIndex((item) => item.id === itemId);
-  };
+  const getTopItemIndex = (itemId: string) => canvas.top.findIndex((item) => item.id === itemId);
+  const getAccessoryLeftIndex = (itemId: string) =>
+    canvas.accessoriesLeft.findIndex((item) => item.id === itemId);
+  const getAccessoryRightIndex = (itemId: string) =>
+    canvas.accessoriesRight.findIndex((item) => item.id === itemId);
 
   const handleSelectItem = (item: {
     id: string;
@@ -117,9 +94,13 @@ export function WardrobePanel() {
         return;
       }
       addToSlot('top', outfitItem);
-    } else if (slot === 'accessoriesLeft') {
+      return;
+    }
+
+    if (slot === 'accessoriesLeft') {
       const existingLeft = getAccessoryLeftIndex(item.id);
       const existingRight = getAccessoryRightIndex(item.id);
+
       if (existingLeft !== -1) {
         removeFromSlot('accessoriesLeft', existingLeft);
         return;
@@ -128,62 +109,50 @@ export function WardrobePanel() {
         removeFromSlot('accessoriesRight', existingRight);
         return;
       }
-      const totalAccessories = canvas.accessoriesLeft.length + canvas.accessoriesRight.length;
-      if (totalAccessories >= 6) {
+
+      if (canvas.accessoriesLeft.length + canvas.accessoriesRight.length >= 6) {
         setPendingItem(outfitItem);
         return;
       }
+
       if (canvas.accessoriesLeft.length <= canvas.accessoriesRight.length) {
         addToSlot('accessoriesLeft', outfitItem);
       } else {
         addToSlot('accessoriesRight', outfitItem);
       }
-    } else if (slot === 'accessoriesRight') {
-      const existingLeft = getAccessoryLeftIndex(item.id);
-      const existingRight = getAccessoryRightIndex(item.id);
-      if (existingLeft !== -1) {
-        removeFromSlot('accessoriesLeft', existingLeft);
-        return;
-      }
-      if (existingRight !== -1) {
-        removeFromSlot('accessoriesRight', existingRight);
-        return;
-      }
-      const totalAccessories = canvas.accessoriesLeft.length + canvas.accessoriesRight.length;
-      if (totalAccessories >= 6) {
-        setPendingItem(outfitItem);
-        return;
-      }
-      if (canvas.accessoriesRight.length <= canvas.accessoriesLeft.length) {
-        addToSlot('accessoriesRight', outfitItem);
-      } else {
-        addToSlot('accessoriesLeft', outfitItem);
-      }
-    } else if (slot === 'bottom') {
+      return;
+    }
+
+    if (slot === 'bottom') {
       if (canvas.bottom?.id === item.id) {
         removeFromSlot('bottom');
         return;
       }
       if (canvas.bottom) {
         setPendingItem(outfitItem);
-      } else {
-        addToSlot('bottom', outfitItem);
+        return;
       }
-    } else if (slot === 'shoes') {
+      addToSlot('bottom', outfitItem);
+      return;
+    }
+
+    if (slot === 'shoes') {
       if (canvas.shoes?.id === item.id) {
         removeFromSlot('shoes');
         return;
       }
       if (canvas.shoes) {
         setPendingItem(outfitItem);
-      } else {
-        addToSlot('shoes', outfitItem);
+        return;
       }
+      addToSlot('shoes', outfitItem);
+      return;
     }
   };
 
   const handleConfirmReplace = () => {
     if (!pendingItem) return;
+
     const slot = CATEGORY_TO_SLOT[pendingItem.category];
     removeFromSlot(slot);
     addToSlot(slot, pendingItem);
@@ -197,93 +166,118 @@ export function WardrobePanel() {
     setPendingItem(null);
   };
 
+  const handleReplaceAccessory = (slot: 'accessoriesLeft' | 'accessoriesRight', index: number) => {
+    if (!pendingItem) return;
+    removeFromSlot(slot, index);
+    addToSlot(slot, pendingItem);
+    setPendingItem(null);
+  };
+
+  const isTopReplacement =
+    pendingItem !== null &&
+    canvas.top.length >= 2 &&
+    CATEGORY_TO_SLOT[pendingItem.category] === 'top';
+  const isAccessoryReplacement =
+    pendingItem !== null && pendingItem.category === 'accessories' && !isTopReplacement;
+
   const isItemInCanvas = (itemId: string) => {
-    const inTop = canvas.top.some((item) => item.id === itemId);
-    const inBottom = canvas.bottom?.id === itemId;
-    const inShoes = canvas.shoes?.id === itemId;
-    const inAccessoriesLeft = canvas.accessoriesLeft.some((item) => item.id === itemId);
-    const inAccessoriesRight = canvas.accessoriesRight.some((item) => item.id === itemId);
-    return inTop || inBottom || inShoes || inAccessoriesLeft || inAccessoriesRight;
+    return (
+      canvas.top.some((item) => item.id === itemId) ||
+      canvas.bottom?.id === itemId ||
+      canvas.shoes?.id === itemId ||
+      canvas.accessoriesLeft.some((item) => item.id === itemId) ||
+      canvas.accessoriesRight.some((item) => item.id === itemId)
+    );
   };
-
-  const getFilteredItems = () => {
-    if (!effectiveMain) return wardrobeItems;
-
-    if (selectedSub) {
-      const categories = SUB_TO_CATEGORY[selectedSub] || [];
-      return wardrobeItems.filter((item) => categories.includes(item.category));
-    }
-
-    const categories = MAIN_TO_CATEGORY[effectiveMain];
-    return wardrobeItems.filter((item) => categories.includes(item.category));
-  };
-
-  const filteredItems = getFilteredItems();
-  const subCategories = effectiveMain ? SUB_CATEGORIES[effectiveMain] : [];
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-      <div className="flex border-b border-[var(--border)]">
-        {MAIN_CATEGORIES.map((main) => (
-          <button
-            key={main}
-            onClick={() => handleSelectMain(main)}
-            className={`
-              flex-1 py-2 text-sm font-medium transition-colors
-              ${
-                effectiveMain === main
-                  ? 'text-[var(--accent)] border-b-2 border-[var(--accent)] bg-[var(--accent)]/5'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
-              }
-            `}
-          >
-            {MAIN_CATEGORY_LABELS[main]}
-          </button>
-        ))}
+    <Card className="flex h-full min-h-0 flex-col border-[var(--border-strong)]" padding="none">
+      <div className="flex-none border-b border-[var(--border)] px-5 py-5 sm:px-6">
+        <p className="eyebrow text-[var(--text-muted)]">Wardrobe rail</p>
+        <h2 className="mt-3 text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+          Pull pieces into the canvas
+        </h2>
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          <span className="border border-[var(--border)] px-3 py-2">{formatSlotLabel(selectedSlot)}</span>
+          <span className="border border-[var(--border)] px-3 py-2">
+            {filteredItems.length} visible item{filteredItems.length === 1 ? '' : 's'}
+          </span>
+        </div>
       </div>
 
-      {effectiveMain && subCategories.length > 0 && (
-        <div className="flex gap-1 p-2 border-b border-[var(--border)] overflow-x-auto">
-          <button
-            onClick={() => setSelectedSub(null)}
-            className={`
-              px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors border
-              ${
-                !selectedSub
-                  ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'
-              }
-            `}
-          >
-            All
-          </button>
-          {subCategories.map((sub) => (
-            <button
-              key={sub}
-              onClick={() => handleSelectSub(sub)}
-              className={`
-                px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors border
-                ${
-                  selectedSub === sub
-                    ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
-                    : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--bg-hover)] hover:border-[var(--accent)]'
-                }
-              `}
-            >
-              {sub}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="flex-none border-b border-[var(--border)] p-3 sm:p-4">
+        <div className="grid grid-cols-2 gap-2">
+          {MAIN_CATEGORIES.map((main) => {
+            const isActive = effectiveMain === main;
 
-      <div className="flex-1 overflow-y-auto p-3">
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-8 text-[var(--text-tertiary)]">
-            <p>No items in this category</p>
-            <p className="text-xs mt-1">Add items to your wardrobe first</p>
+            return (
+              <button
+                key={main}
+                type="button"
+                onClick={() => handleSelectMain(main)}
+                className={[
+                  'border px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.22em] transition-colors',
+                  isActive
+                    ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
+                    : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+                ].join(' ')}
+              >
+                {MAIN_CATEGORY_LABELS[main]}
+              </button>
+            );
+          })}
+        </div>
+
+        {effectiveMain ? (
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            <button
+              type="button"
+              onClick={() => setSelectedSub(null)}
+              className={[
+                'border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
+                !selectedSub
+                  ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
+                  : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+              ].join(' ')}
+            >
+              All
+            </button>
+            {subCategories.map((sub) => (
+              <button
+                key={sub}
+                type="button"
+                onClick={() => setSelectedSub(sub)}
+                className={[
+                  'border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
+                  selectedSub === sub
+                    ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
+                    : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+                ].join(' ')}
+              >
+                {sub}
+              </button>
+            ))}
           </div>
+        ) : null}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+        {isLoading ? (
+          <SurfaceMessage
+            className="h-full"
+            description="Pulling wardrobe inventory into the selection rail."
+            kicker="Loading"
+            title="Preparing pieces"
+          />
+        ) : filteredItems.length === 0 ? (
+          <SurfaceMessage
+            className="h-full"
+            description="No wardrobe items match this selection. Add inventory or switch to another category edit."
+            kicker="Empty rail"
+            title="No pieces available"
+          />
         ) : (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {filteredItems.map((item) => {
               const imageUrl = getItemImageUrl(item.image_path);
               const inCanvas = isItemInCanvas(item.id);
@@ -291,33 +285,43 @@ export function WardrobePanel() {
               return (
                 <button
                   key={item.id}
+                  type="button"
                   onClick={() => handleSelectItem(item)}
-                  className={`
-                    flex flex-col items-center p-2 rounded-lg border transition-all
-                    ${
-                      inCanvas
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/10'
-                        : 'border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--bg-hover)]'
-                    }
-                  `}
+                  className={[
+                    'group flex flex-col border p-3 text-left transition-colors',
+                    inCanvas
+                      ? 'border-[var(--border-strong)] bg-[var(--bg)]'
+                      : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] hover:bg-[var(--bg)]',
+                  ].join(' ')}
                 >
-                  <div className="w-14 h-14 flex items-center justify-center mb-1">
+                  <div className="flex aspect-square items-center justify-center border border-[var(--border)] bg-[color:rgba(244,244,239,0.65)] p-4">
                     {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={item.name}
-                        className="max-w-full max-h-full object-contain"
-                      />
+                      <img src={imageUrl} alt={item.name} className="max-h-full max-w-full object-contain" />
                     ) : (
-                      <div className="w-12 h-12 bg-[var(--bg-secondary)] rounded flex items-center justify-center">
-                        <span className="text-lg">👕</span>
-                      </div>
+                      <span className="text-[11px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+                        No image
+                      </span>
                     )}
                   </div>
-                  <span className="text-xs text-[var(--text-secondary)] text-center truncate w-full">
-                    {item.name}
-                  </span>
-                  {inCanvas && <span className="text-[10px] text-[var(--accent)]">Added</span>}
+                  <div className="mt-3 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+                        {item.category}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm uppercase tracking-[0.08em] text-[var(--text-primary)]">
+                        {item.name}
+                      </p>
+                    </div>
+                    {inCanvas ? (
+                      <span className="inline-flex h-8 w-8 items-center justify-center border border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]">
+                        <Check className="h-4 w-4" />
+                      </span>
+                    ) : (
+                      <span className="inline-flex h-8 w-8 items-center justify-center border border-[var(--border)] text-[var(--text-muted)] group-hover:border-[var(--border-strong)] group-hover:text-[var(--text-primary)]">
+                        <Sparkles className="h-4 w-4" />
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -325,60 +329,20 @@ export function WardrobePanel() {
         )}
       </div>
 
-      {pendingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-xs bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)] p-4">
-            {canvas.top.length >= 2 && CATEGORY_TO_SLOT[pendingItem.category] === 'top' ? (
-              <>
-                <h3 className="font-semibold mb-2">Replace top?</h3>
-                <p className="text-sm text-[var(--text-secondary)] mb-4">
-                  You already have 2 tops. Choose which one to replace with {pendingItem.name}:
-                </p>
-                <div className="flex gap-2 mb-2">
-                  {canvas.top.map((topItem, index) => (
-                    <button
-                      key={topItem.id}
-                      onClick={() => handleReplaceTop(index)}
-                      className="flex-1 p-2 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] hover:bg-[var(--bg-hover)] transition-all"
-                    >
-                      <div className="w-16 h-16 mx-auto mb-1 flex items-center justify-center">
-                        {topItem.image_path && (
-                          <img
-                            src={getItemImageUrl(topItem.image_path) || ''}
-                            alt={topItem.name}
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        )}
-                      </div>
-                      <span className="text-xs text-[var(--text-secondary)] truncate">
-                        {topItem.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <Button variant="ghost" onClick={() => setPendingItem(null)} className="w-full">
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <>
-                <h3 className="font-semibold mb-2">Replace item?</h3>
-                <p className="text-sm text-[var(--text-secondary)] mb-4">
-                  This slot already has an item. Replace it with {pendingItem.name}?
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="ghost" onClick={() => setPendingItem(null)} className="flex-1">
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={handleConfirmReplace} className="flex-1">
-                    Replace
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      {pendingItem ? (
+        <ReplaceModal
+          accessoryLeftItems={canvas.accessoriesLeft}
+          accessoryRightItems={canvas.accessoriesRight}
+          canvasTop={canvas.top}
+          isAccessoryReplacement={isAccessoryReplacement}
+          isTopReplacement={isTopReplacement}
+          onCancel={() => setPendingItem(null)}
+          onConfirmReplace={handleConfirmReplace}
+          onReplaceAccessory={handleReplaceAccessory}
+          onReplaceTop={handleReplaceTop}
+          pendingItem={pendingItem}
+        />
+      ) : null}
+    </Card>
   );
 }

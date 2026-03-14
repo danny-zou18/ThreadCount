@@ -1,32 +1,80 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Plus, RefreshCcw, Save } from 'lucide-react';
 import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
 import { OutfitCanvas } from '../components/OutfitCanvas';
 import { WardrobePanel } from '../components/WardrobePanel';
+import { BuilderMetric } from '../components/builder/BuilderMetric';
+import { SaveOutfitModal } from '../components/builder/SaveOutfitModal';
+import { SavedLooksPanel } from '../components/builder/SavedLooksPanel';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 
 export function OutfitBuilderPage() {
-  const { fetchOutfits, saveOutfit, clearCanvas, canvas } = useOutfitBuilderStore();
-  const { fetchItems } = useWardrobeStore();
+  const {
+    clearCanvas,
+    clearError,
+    currentOutfit,
+    error,
+    fetchOutfits,
+    isLoading,
+    loadOutfit,
+    outfits,
+    saveOutfit,
+  } = useOutfitBuilderStore();
+  const { fetchItems, items: wardrobeItems, isLoading: isWardrobeLoading } = useWardrobeStore();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [outfitName, setOutfitName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
 
   useEffect(() => {
-    fetchItems();
-    fetchOutfits();
+    void fetchItems();
+    void fetchOutfits();
   }, [fetchItems, fetchOutfits]);
 
-  const hasItems = Object.values(canvas).some((item) => item !== null);
+  useEffect(() => {
+    if (!saveState || saveState !== 'saved') {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setSaveState('idle'), 2400);
+    return () => window.clearTimeout(timer);
+  }, [saveState]);
+
+  const canvas = useOutfitBuilderStore((state) => state.canvas);
+  const hasItems = useMemo(
+    () =>
+      canvas.top.length > 0 ||
+      canvas.bottom !== null ||
+      canvas.shoes !== null ||
+      canvas.accessoriesLeft.length > 0 ||
+      canvas.accessoriesRight.length > 0,
+    [canvas],
+  );
+
+  const totalCanvasItems =
+    canvas.top.length +
+    (canvas.bottom ? 1 : 0) +
+    (canvas.shoes ? 1 : 0) +
+    canvas.accessoriesLeft.length +
+    canvas.accessoriesRight.length;
+
+  const isBootstrapping = (isLoading && outfits.length === 0) || (isWardrobeLoading && wardrobeItems.length === 0);
+  const isRefreshDisabled = isLoading || isWardrobeLoading;
 
   const handleSave = async () => {
     setIsSaving(true);
+    setSaveState('idle');
+
     try {
-      await saveOutfit(outfitName || 'Untitled Outfit');
+      await saveOutfit(outfitName.trim() || 'Untitled Outfit');
       setShowSaveModal(false);
       setOutfitName('');
+      setSaveState('saved');
     } catch {
-      // Error handled in store
+      // store handles error state
     } finally {
       setIsSaving(false);
     }
@@ -34,67 +82,126 @@ export function OutfitBuilderPage() {
 
   const handleNewOutfit = () => {
     clearCanvas();
+    setSaveState('idle');
+    setOutfitName('');
+  };
+
+  const handleReload = () => {
+    clearError();
+    void fetchItems();
+    void fetchOutfits();
   };
 
   return (
-    <div className="h-screen bg-[var(--bg-primary)] p-4">
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">Outfit Builder</h1>
+    <div className="builder-shell page-enter bg-[var(--bg)]">
+      <section className="builder-canvas-row min-h-0 overflow-hidden px-[var(--page-px)] pt-5">
+        <div className="grid min-h-0 grid-cols-[minmax(300px,0.92fr)_minmax(0,1.45fr)_minmax(300px,0.98fr)] gap-6 overflow-hidden pb-4">
+          <div className="min-h-0 overflow-hidden">
+            <SavedLooksPanel
+              isBootstrapping={isBootstrapping}
+              isRefreshDisabled={isRefreshDisabled}
+              onDelete={(outfitId) => void useOutfitBuilderStore.getState().deleteOutfit(outfitId)}
+              onLoad={(selectedOutfit) => void loadOutfit(selectedOutfit)}
+              onRefresh={handleReload}
+              outfits={outfits}
+              saveState={saveState}
+            />
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={handleNewOutfit} size="sm">
-              New
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => setShowSaveModal(true)}
-              disabled={!hasItems}
-              size="sm"
-            >
-              Save
-            </Button>
-          </div>
-        </div>
 
-        <div className="flex-1 grid grid-cols-[1.5fr_1fr] gap-4 min-h-0">
-          <div className="bg-gray-100 rounded-lg overflow-hidden">
-            <OutfitCanvas />
-          </div>
+          <Card className="flex min-h-0 flex-col border-[var(--border-strong)] overflow-hidden" padding="none">
+            <div className="flex flex-none items-end justify-between gap-6 border-b border-[var(--border)] px-6 py-5">
+              <div className="min-w-0">
+                <p className="eyebrow text-[var(--text-muted)]">Outfit atelier</p>
+                <h1 className="mt-3 text-[clamp(2rem,2.9vw,3.75rem)] font-semibold uppercase leading-none tracking-[0.08em] text-[var(--text-primary)]">
+                  Outfit Builder
+                </h1>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--text-secondary)]">
+                  Compose silhouettes, stack layers, and keep the entire canvas visible inside a locked viewport studio.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                <span className="border border-[var(--border)] px-3 py-2">
+                  {currentOutfit ? `Editing ${currentOutfit.name || 'untitled look'}` : 'New composition'}
+                </span>
+                <span className="border border-[var(--border)] px-3 py-2">
+                  {hasItems ? 'Canvas populated' : 'Canvas empty'}
+                </span>
+              </div>
+            </div>
+
+            {error ? (
+              <div
+                className="flex flex-none items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-4 text-sm text-[var(--text-primary)]"
+                role="alert"
+              >
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>{error}</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button onClick={clearError} size="sm" variant="ghost">
+                    Dismiss
+                  </Button>
+                  <Button onClick={handleReload} size="sm" variant="secondary">
+                    <RefreshCcw className="h-4 w-4" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-none gap-4 border-b border-[var(--border)] px-6 py-4">
+              <BuilderMetric label="Active items" value={String(totalCanvasItems).padStart(2, '0')} />
+              <BuilderMetric label="Saved looks" value={String(outfits.length).padStart(2, '0')} />
+              <BuilderMetric label="Wardrobe ready" value={String(wardrobeItems.length).padStart(2, '0')} />
+            </div>
+
+            <div className="canvas-area min-h-0 flex-1 overflow-hidden p-4">
+              {isBootstrapping ? (
+                <SurfaceMessage
+                  className="flex h-full min-h-0 items-center justify-center"
+                  description="Loading wardrobe pieces and saved looks into the builder studio."
+                  kicker="Loading"
+                  title="Preparing atelier"
+                />
+              ) : (
+                <OutfitCanvas />
+              )}
+            </div>
+          </Card>
+
           <div className="min-h-0 overflow-hidden">
             <WardrobePanel />
           </div>
         </div>
+      </section>
 
-        {showSaveModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="w-full max-w-sm bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)] p-4">
-              <h2 className="text-lg font-semibold mb-3">Save Outfit</h2>
-              <input
-                type="text"
-                value={outfitName}
-                onChange={(e) => setOutfitName(e.target.value)}
-                placeholder="Outfit name"
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--color-primary)] mb-3"
-              />
-              <div className="flex gap-2">
-                <Button variant="ghost" onClick={() => setShowSaveModal(false)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  {isSaving ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="builder-controls flex items-center justify-between gap-6 px-[var(--page-px)]">
+        <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          <span>{hasItems ? `${totalCanvasItems} item${totalCanvasItems === 1 ? '' : 's'} active` : 'Canvas empty'}</span>
+          <span>{currentOutfit ? 'Edit mode' : 'Draft mode'}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button onClick={handleNewOutfit} size="sm" variant="secondary">
+            <Plus className="h-4 w-4" />
+            New look
+          </Button>
+          <Button disabled={!hasItems || isSaving} onClick={() => setShowSaveModal(true)} size="sm">
+            <Save className="h-4 w-4" />
+            Save look
+          </Button>
+        </div>
       </div>
+
+      {showSaveModal ? (
+        <SaveOutfitModal
+          isSaving={isSaving}
+          name={outfitName}
+          onChange={setOutfitName}
+          onClose={() => setShowSaveModal(false)}
+          onSave={handleSave}
+        />
+      ) : null}
     </div>
   );
 }

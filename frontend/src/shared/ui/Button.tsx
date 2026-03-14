@@ -10,16 +10,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]',
+  primary:
+    'border border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)] hover:opacity-80',
   secondary:
-    'bg-transparent text-[var(--text-primary)] border border-[var(--border-strong)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-elevated)]',
-  ghost: 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
+    'border border-[var(--border-strong)] bg-transparent text-[var(--text-primary)] hover:bg-[var(--surface-inverse)] hover:text-[var(--text-inverse)]',
+  ghost:
+    'border border-transparent bg-transparent text-[var(--text-secondary)] hover:border-[var(--border)] hover:text-[var(--text-primary)]',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs tracking-wide',
-  md: 'px-5 py-2.5 text-sm tracking-wide',
-  lg: 'px-7 py-3 text-sm tracking-wide',
+  sm: 'min-h-10 px-3 py-2 text-[11px] tracking-[0.22em]',
+  md: 'min-h-11 px-5 py-3 text-[11px] tracking-[0.24em]',
+  lg: 'min-h-12 px-7 py-3.5 text-[11px] tracking-[0.28em]',
 };
 
 export function Button({
@@ -31,13 +33,13 @@ export function Button({
   ...props
 }: ButtonProps) {
   return (
-    <button
-      className={clsx(
-        'inline-flex items-center justify-center gap-2 font-medium uppercase tracking-wider transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
-        'disabled:opacity-40 disabled:cursor-not-allowed',
-        variantStyles[variant],
-        sizeStyles[size],
+      <button
+        className={clsx(
+          'inline-flex items-center justify-center gap-2 font-medium uppercase transition-all duration-300',
+          'focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
+          'disabled:opacity-40 disabled:cursor-not-allowed',
+          variantStyles[variant],
+          sizeStyles[size],
         className,
       )}
       disabled={disabled}

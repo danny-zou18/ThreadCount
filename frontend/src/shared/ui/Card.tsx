@@ -16,8 +16,7 @@ export function Card({ padding = 'md', className, children, ...props }: CardProp
   return (
     <div
       className={clsx(
-        'bg-[var(--bg-elevated)] border border-[var(--border)]',
-        'shadow-[var(--shadow-card)]',
+        'border border-[var(--border)] bg-[var(--bg-elevated)] shadow-[var(--shadow-panel)]',
         paddingStyles[padding],
         className,
       )}

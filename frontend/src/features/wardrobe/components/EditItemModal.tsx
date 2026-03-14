@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
 import { useWardrobeStore } from '../store';
 import { CATEGORY_LABELS, CATEGORIES, type Category, type WardrobeItem } from '../types';
 import { getItemImageUrl } from '../api';
+import { WardrobeBadgeList } from './WardrobeBadgeList';
+import { WardrobeModalFrame } from './WardrobeModalFrame';
 
 interface EditItemModalProps {
   isOpen: boolean;
@@ -18,6 +21,8 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
   const [colors, setColors] = useState<string[]>([]);
   const [seasons, setSeasons] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const selectClassName =
+    'w-full border border-[var(--border-strong)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]';
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -82,190 +87,129 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
   const imageUrl = getItemImageUrl(item.image_path);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg)] w-full max-w-lg rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2
-              className="text-2xl text-[var(--text-primary)]"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Edit Item
-            </h2>
-            <button
-              onClick={handleClose}
-              className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+    <WardrobeModalFrame
+      description="Adjust naming, category placement, and labels while keeping the item record intact."
+      onClose={handleClose}
+      title="Edit Item"
+    >
+      {error && (
+        <div
+          className="mb-5 border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 text-sm text-[var(--text-primary)]"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+
+      {showDeleteConfirm ? (
+        <div className="space-y-6 border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-6 text-center sm:p-8">
+          <svg
+            className="mx-auto h-16 w-16 text-[var(--text-primary)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+            />
+          </svg>
+          <div className="space-y-3">
+            <p className="eyebrow text-[var(--text-muted)]">Permanent action</p>
+            <h3 className="text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+              Delete Item
+            </h3>
+            <p className="mx-auto max-w-xl text-sm leading-6 text-[var(--text-secondary)]">
+              Remove {item.name} from the archive. This action cannot be undone.
+            </p>
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] rounded text-sm text-[var(--error)]">
-              {error}
-            </div>
-          )}
-
-          {showDeleteConfirm ? (
-            <div className="text-center py-6">
-              <svg
-                className="w-16 h-16 mx-auto text-[var(--error)] mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">Delete Item?</h3>
-              <p className="text-sm text-[var(--text-secondary)] mb-6">
-                This will permanently delete "{item.name}". This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <Button
-                  variant="ghost"
-                  className="flex-1"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 bg-[var(--error)] hover:bg-[var(--error)]/90"
-                  onClick={handleDelete}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Deleting...' : 'Delete'}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              {imageUrl && (
-                <div className="mb-6 flex justify-center">
-                  <img src={imageUrl} alt={item.name} className="max-h-64 w-auto object-contain" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button onClick={() => setShowDeleteConfirm(false)} type="button" variant="secondary">
+              Keep Item
+            </Button>
+            <Button className="min-w-36" disabled={isLoading} onClick={handleDelete} type="button">
+              {isLoading ? 'Deleting...' : 'Delete Item'}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+            <section className="border border-[var(--border-strong)] bg-[var(--bg-elevated)]">
+              {imageUrl ? (
+                <div className="flex min-h-[22rem] items-center justify-center border-b border-[var(--border)] bg-[var(--bg-muted)] p-6">
+                  <img alt={item.name} className="max-h-80 w-auto object-contain" src={imageUrl} />
+                </div>
+              ) : (
+                <div className="flex min-h-[22rem] items-center justify-center border-b border-[var(--border)] bg-[var(--bg-muted)] p-6 text-center text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  Image unavailable
                 </div>
               )}
-
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="edit-name"
-                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                  >
-                    Name
-                  </label>
-                  <input
-                    id="edit-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="edit-category"
-                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                  >
-                    Category
-                  </label>
-                  <select
-                    id="edit-category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as Category)}
-                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                  >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {CATEGORY_LABELS[cat]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="edit-labels"
-                    className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2"
-                  >
-                    Tags (comma-separated)
-                  </label>
-                  <input
-                    id="edit-labels"
-                    type="text"
-                    value={labels}
-                    onChange={(e) => setLabels(e.target.value)}
-                    className="w-full px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
-                  />
-                </div>
-
-                {colors.length > 0 && (
-                  <div>
-                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                      Colors
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {colors.map((color) => (
-                        <span
-                          key={color}
-                          className="px-3 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-sm rounded-full"
-                        >
-                          {color}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {seasons.length > 0 && (
-                  <div>
-                    <p className="block text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                      Seasons
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {seasons.map((season) => (
-                        <span
-                          key={season}
-                          className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-full"
-                        >
-                          {season}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div className="space-y-4 p-5">
+                <p className="eyebrow text-[var(--text-muted)]">Detected metadata</p>
+                <WardrobeBadgeList label="Colors" values={colors} />
+                <WardrobeBadgeList label="Seasons" values={seasons} />
               </div>
+            </section>
 
-              <div className="flex gap-3 mt-6">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex-1 text-[var(--error)] hover:text-[var(--error)]"
-                  onClick={() => setShowDeleteConfirm(true)}
+            <section className="space-y-4">
+              <Input
+                className="border-[var(--border-strong)] bg-[var(--bg-elevated)]"
+                id="edit-name"
+                label="Name"
+                onChange={(e) => setName(e.target.value)}
+                required
+                value={name}
+              />
+
+              <div className="space-y-2">
+                <label
+                  className="text-[11px] font-medium uppercase tracking-[0.24em] text-[var(--text-secondary)]"
+                  htmlFor="edit-category"
                 >
-                  Delete
-                </Button>
-                <Button type="submit" className="flex-1" disabled={!name.trim() || isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
+                  Category
+                </label>
+                <select
+                  className={selectClassName}
+                  id="edit-category"
+                  onChange={(e) => setCategory(e.target.value as Category)}
+                  value={category}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {CATEGORY_LABELS[cat]}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
+
+              <Input
+                className="border-[var(--border-strong)] bg-[var(--bg-elevated)]"
+                id="edit-labels"
+                label="Tags"
+                onChange={(e) => setLabels(e.target.value)}
+                value={labels}
+              />
+            </section>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <Button onClick={() => setShowDeleteConfirm(true)} type="button" variant="ghost">
+              Delete Item
+            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button onClick={handleClose} type="button" variant="secondary">
+                Cancel
+              </Button>
+              <Button disabled={!name.trim() || isLoading} type="submit">
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </form>
+      )}
+    </WardrobeModalFrame>
   );
 }

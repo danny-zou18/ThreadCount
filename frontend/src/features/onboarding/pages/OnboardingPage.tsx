@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuthStore } from '@/features/auth/store';
 import { Button } from '@/shared/ui/Button';
+import { PageIntro } from '@/shared/ui/PageIntro';
+import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 import { PhotoUpload } from '../components/PhotoUpload';
 import {
   uploadAvatarPhoto,
@@ -56,46 +58,25 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1
-            className="text-4xl text-[var(--text-primary)] mb-3"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
-            Welcome to Seamless
-          </h1>
-          <p
-            className="text-xs uppercase tracking-[0.2em] text-[var(--text-tertiary)]"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            Let&apos;s set up your profile
-          </p>
-        </div>
+    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-10 pb-8">
+      <PageIntro
+        eyebrow="Onboarding"
+        title="Construct the model canvas before the collection."
+        description="This capture step prepares your private avatar so the wardrobe, dashboard, and builder can stay image-first and clean."
+      />
 
-        <div className="border-t border-[var(--border-strong)] mb-8" />
-
-        {step === 'upload' && (
-          <>
-            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] p-6 mb-6">
-              <p
-                className="text-xs uppercase tracking-[0.15em] text-[var(--text-tertiary)] mb-4"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                Signed in as
-              </p>
-              <p
-                className="text-sm text-[var(--text-primary)] mb-6"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                {user?.email ?? 'unknown'}
-              </p>
-
-              {uploadError && (
-                <div className="mb-4 p-3 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] rounded text-sm text-[var(--error)]">
-                  {uploadError}
-                </div>
-              )}
+      <div className="grid gap-8 xl:grid-cols-[1.35fr_0.65fr]">
+        <section className="space-y-6">
+          {step === 'upload' && (
+            <>
+              {uploadError ? (
+                <SurfaceMessage
+                  kicker="Capture issue"
+                  title="Upload interrupted"
+                  description={uploadError}
+                  className="text-left"
+                />
+              ) : null}
 
               <PhotoUpload
                 onPhotoSelected={handlePhotoSelected}
@@ -103,69 +84,47 @@ export function OnboardingPage() {
                 onContinue={handleContinue}
                 onSkip={handleSkip}
               />
-            </div>
+            </>
+          )}
 
-            <Button variant="ghost" size="sm" onClick={logout} className="w-full">
-              Log out
-            </Button>
-          </>
-        )}
-
-        {step === 'processing' && (
-          <div className="bg-[var(--bg-elevated)] border border-[var(--border)] p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-[var(--accent)] bg-opacity-10 flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <svg
-                className="w-8 h-8 text-[var(--accent)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
+          {step === 'processing' && (
+            <div role="status" aria-live="polite">
+              <SurfaceMessage
+                kicker="Processing"
+                title="Generating the model canvas"
+                description="Your uploaded image is being processed into a clean styling surface. This may take a moment."
+              />
             </div>
-            <h2
-              className="text-xl text-[var(--text-primary)] mb-2"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Creating Your Avatar
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)]">Generating your model canvas...</p>
-          </div>
-        )}
+          )}
 
-        {step === 'success' && (
-          <div className="bg-[var(--bg-elevated)] border border-[var(--border)] p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-[var(--success)] bg-opacity-10 flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-[var(--success)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+          {step === 'success' && (
+            <div role="status" aria-live="polite">
+              <SurfaceMessage
+                kicker="Ready"
+                title="Avatar prepared"
+                description="The canvas is complete. Redirecting you into the dashboard now."
+              />
             </div>
-            <h2
-              className="text-xl text-[var(--text-primary)] mb-2"
-              style={{ fontFamily: 'var(--font-serif)' }}
-            >
-              Avatar Ready!
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Redirecting you to the dashboard...
-            </p>
-          </div>
-        )}
+          )}
+        </section>
+
+        <aside className="flex flex-col gap-6">
+          <SurfaceMessage
+            kicker="Profile"
+            title={user?.email ?? 'Unknown account'}
+            description="This account will anchor your wardrobe library and generated looks."
+            className="text-left"
+          />
+          <SurfaceMessage
+            kicker="Sequence"
+            title="Upload. Process. Enter."
+            description="We keep this step direct: one clean portrait, one model canvas, then immediate access to the finished product surfaces."
+            className="text-left"
+          />
+          <Button variant="ghost" size="sm" onClick={() => void logout()} className="w-full">
+            Log out
+          </Button>
+        </aside>
       </div>
     </div>
   );

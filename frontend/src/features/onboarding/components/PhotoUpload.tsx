@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
 
 interface PhotoUploadProps {
   onPhotoSelected?: (file: File) => void;
@@ -78,56 +79,53 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-6">
-        <h2
-          className="text-2xl text-[var(--text-primary)] mb-2"
-          style={{ fontFamily: 'var(--font-serif)' }}
-        >
-          Create Your Avatar
+    <div className="w-full space-y-6">
+      <div className="space-y-3">
+        <p className="eyebrow text-[var(--text-muted)]">Avatar capture</p>
+        <h2 className="text-3xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)] sm:text-4xl">
+          Upload a studio-ready full-body image.
         </h2>
-        <p className="text-sm text-[var(--text-secondary)]">
-          Upload a full body photo so we can generate AI images of you wearing outfits.
+        <p className="max-w-2xl text-sm leading-7 text-[var(--text-secondary)]">
+          Use a clean pose so the model canvas reads clearly across future outfit generations.
         </p>
       </div>
 
-      <div className="bg-[var(--bg-elevated)] border border-[var(--border)] p-6 mb-6">
-        <p
-          className="text-xs uppercase tracking-[0.15em] text-[var(--text-tertiary)] mb-4"
-          style={{ fontFamily: 'var(--font-mono)' }}
-        >
-          Photo Guidelines
-        </p>
-        <ul className="text-xs text-[var(--text-secondary)] space-y-2 mb-6">
+      <Card padding="lg" className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+          <div className="space-y-4 border border-[var(--border)] bg-[var(--bg)] p-5">
+            <p className="eyebrow text-[var(--text-muted)]">Photo guidelines</p>
+            <ul className="space-y-3 text-sm leading-6 text-[var(--text-secondary)]">
           <li className="flex items-start gap-2">
-            <span className="text-[var(--accent)]">•</span>
+            <span className="mt-[7px] h-[6px] w-[6px] bg-[var(--text-primary)]" />
             Stand straight with arms at your sides
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[var(--accent)]">•</span>
+            <span className="mt-[7px] h-[6px] w-[6px] bg-[var(--text-primary)]" />
             Use a neutral background
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[var(--accent)]">•</span>
+            <span className="mt-[7px] h-[6px] w-[6px] bg-[var(--text-primary)]" />
             Full body must be visible
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-[var(--accent)]">•</span>
+            <span className="mt-[7px] h-[6px] w-[6px] bg-[var(--text-primary)]" />
             Wear form-fitting clothing
           </li>
         </ul>
+          </div>
 
-        {!preview ? (
-          <div
-            className={clsx(
-              'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-              'border-[var(--border)] hover:border-[var(--accent)] cursor-pointer',
-              error && 'border-[var(--error)]',
-            )}
-            onClick={() => inputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-          >
+          {!preview ? (
+            <button
+              type="button"
+              className={clsx(
+                'group min-h-[360px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--bg-elevated),var(--bg))] px-6 py-10 text-center transition-all duration-300',
+                'hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)] focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
+                error && 'border-[var(--border-strong)]',
+              )}
+              onClick={() => inputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
             <input
               ref={inputRef}
               type="file"
@@ -135,9 +133,9 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
               className="hidden"
               onChange={handleFileSelect}
             />
-            <div className="mb-4">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center border border-[var(--border)] bg-[var(--bg)] text-[var(--text-primary)] transition-all duration-300 group-hover:border-[var(--border-strong)]">
               <svg
-                className="w-10 h-10 mx-auto text-[var(--text-tertiary)]"
+                className="h-10 w-10"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -150,33 +148,49 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
                 />
               </svg>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-1">
-              Drop your photo here or click to browse
+            <p className="eyebrow text-[var(--text-muted)]">Upload portrait</p>
+            <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+              Drop image or browse archive
             </p>
-            <p className="text-xs text-[var(--text-tertiary)]">JPG, PNG up to 10MB</p>
-            {error && <p className="text-xs text-[var(--error)] mt-3">{error}</p>}
-          </div>
-        ) : (
-          <div className="relative">
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-[var(--bg)] mb-4">
-              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-            </div>
-            <button
-              onClick={handleRemove}
-              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-[var(--bg-elevated)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--error)] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)]">
+              JPG or PNG. Maximum file size 10MB. Use an uncompromised front-facing shot.
+            </p>
+            {error ? (
+              <p className="mt-5 text-[11px] uppercase tracking-[0.18em] text-[var(--text-primary)]">
+                {error}
+              </p>
+            ) : null}
+            </button>
+          ) : (
+            <div className="space-y-4">
+              <div className="relative border border-[var(--border)] bg-[var(--bg)]">
+                <div className="aspect-[4/5] overflow-hidden">
+                  <img src={preview} alt="Selected avatar preview" className="h-full w-full object-cover" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  aria-label="Remove photo"
+                  className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-opacity hover:opacity-60"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12"
                 />
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
+                <span className="eyebrow text-[var(--text-muted)]">Image selected</span>
+                <span className="text-sm text-[var(--text-secondary)]">Ready for processing</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       <div className="flex gap-3">
         <Button className="flex-1" onClick={handleContinue} disabled={!selectedFile || isUploading}>
@@ -186,8 +200,9 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
 
       {onSkip && (
         <button
+          type="button"
           onClick={onSkip}
-          className="w-full mt-3 text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+          className="w-full text-[11px] uppercase tracking-[0.24em] text-[var(--text-muted)] transition-opacity hover:opacity-60"
         >
           Skip for now — set up later
         </button>
