@@ -7,8 +7,6 @@ interface CanvasSlotShellProps {
   heightClassName?: string;
   isFilled?: boolean;
   isSelected?: boolean;
-  label: string;
-  meta?: string;
   onClick?: () => void;
 }
 
@@ -18,8 +16,6 @@ export function CanvasSlotShell({
   heightClassName,
   isFilled = false,
   isSelected = false,
-  label,
-  meta,
   onClick,
 }: CanvasSlotShellProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -38,27 +34,18 @@ export function CanvasSlotShell({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={clsx(
-        'group relative w-full overflow-hidden border text-left transition-all duration-200',
+        'group relative w-full overflow-hidden text-left transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
         heightClassName,
         isSelected
-          ? 'border-[var(--border-strong)] bg-[var(--bg-elevated)] shadow-[0_0_0_1px_var(--border-strong)]'
-          : 'border-[var(--border)] bg-[color:rgba(251,251,248,0.58)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-elevated)]',
+          ? 'bg-[color:rgba(251,251,248,0.9)]'
+          : 'bg-[color:rgba(251,251,248,0.4)] hover:bg-[color:rgba(251,251,248,0.72)]',
         className,
       )}
     >
-      <div className="absolute left-0 top-0 z-10 border-r border-b border-[var(--border)] bg-[var(--bg)] px-2.5 py-1.5">
-        <p className="eyebrow text-[var(--text-muted)]">{label}</p>
-        {meta ? (
-          <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[var(--text-secondary)]">
-            {meta}
-          </p>
-        ) : null}
-      </div>
-
       <div
         className={clsx(
-          'relative h-full min-h-0 w-full pt-12',
+          'relative h-full min-h-0 w-full',
           !isFilled &&
             'bg-[linear-gradient(135deg,rgba(17,17,17,0.03)_0,rgba(17,17,17,0.03)_1px,transparent_1px,transparent_100%)] bg-[length:18px_18px]',
         )}

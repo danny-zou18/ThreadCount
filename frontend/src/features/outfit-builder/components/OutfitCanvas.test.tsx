@@ -39,7 +39,7 @@ describe('OutfitCanvas', () => {
   it('renders the locked canvas frame with empty slot states', () => {
     const { container } = render(<OutfitCanvas />);
 
-    const canvasSection = screen.getByText(/composition board/i).closest('section');
+    const canvasSection = container.querySelector('section');
     expect(canvasSection).toHaveClass('flex', 'h-full', 'min-h-0', 'flex-col', 'overflow-hidden');
 
     const slotGrid = container.querySelector('section > .grid');
@@ -71,9 +71,8 @@ describe('OutfitCanvas', () => {
     expect(screen.getByRole('button', { name: /remove wide trousers/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /remove loafers/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /swap top layer/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/drag across rails/i)).toHaveLength(2);
 
-    const topSlot = screen.getByText('Top').closest('[role="button"]');
+    const topSlot = document.querySelectorAll('[role="button"]')[1];
     expect(topSlot).not.toBeNull();
 
     await user.click(topSlot!);

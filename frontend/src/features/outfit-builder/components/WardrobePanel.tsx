@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import { ArrowLeft, Check, RefreshCcw, Sparkles } from 'lucide-react';
 import { useOutfitBuilderStore } from '../store';
-import { MAIN_CATEGORY_LABELS, type OutfitItem, type OutfitSlot } from '../types';
+import { MAIN_CATEGORY_LABELS, type Outfit, type OutfitItem } from '../types';
 import { getItemImageUrl } from '../api';
 import { useWardrobeStore } from '@/features/wardrobe/store';
-import { Card } from '@/shared/ui/Card';
+import { OutfitCard } from './OutfitCard';
+import { Button } from '@/shared/ui/Button';
 import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 import {
   CATEGORY_TO_SLOT,
@@ -18,21 +19,38 @@ import {
 import { ReplaceModal } from './panel/ReplaceModal';
 import type { Category } from '@/features/wardrobe/types';
 
-function formatSlotLabel(slot: OutfitSlot | null) {
-  if (!slot) return 'No focused zone';
-  if (slot === 'accessoriesLeft') return 'Left accessory rail';
-  if (slot === 'accessoriesRight') return 'Right accessory rail';
-  return slot === 'bottom' ? 'Bottom zone' : `${MAIN_CATEGORY_LABELS[SLOT_TO_MAIN[slot]]} zone`;
+type RailTab = MainCategory | 'saved';
+type NavLevel = 'root' | 'garments';
+
+interface WardrobePanelProps {
+  isBootstrapping: boolean;
+  isRefreshDisabled: boolean;
+  onDeleteSavedLook: (outfitId: string) => void;
+  onLoadSavedLook: (outfit: Outfit) => void;
+  onRefreshSavedLooks: () => void;
+  outfits: Outfit[];
+  saveState: 'idle' | 'saved';
 }
 
-export function WardrobePanel() {
-  const { addToSlot, canvas, removeFromSlot, selectedSlot } = useOutfitBuilderStore();
+export function WardrobePanel({
+  isBootstrapping,
+  isRefreshDisabled,
+  onDeleteSavedLook,
+  onLoadSavedLook,
+  onRefreshSavedLooks,
+  outfits,
+  saveState,
+}: WardrobePanelProps) {
+const { addToSlot, canvas, removeFromSlot, selectedSlot } = useOutfitBuilderStore();
   const { items: wardrobeItems, isLoading } = useWardrobeStore();
-  const [selectedMain, setSelectedMain] = useState<MainCategory | null>(null);
+  const [navLevel, setNavLevel] = useState<NavLevel>('root');
+  const [selectedTab, setSelectedTab] = useState<RailTab | null>(null);
   const [selectedSub, setSelectedSub] = useState<string | null>(null);
   const [pendingItem, setPendingItem] = useState<OutfitItem | null>(null);
 
-  const effectiveMain = selectedSlot ? SLOT_TO_MAIN[selectedSlot] : selectedMain;
+  const slotTab = selectedSlot ? SLOT_TO_MAIN[selectedSlot] : null;
+  const activeTab = slotTab ?? selectedTab;
+  const effectiveMain = activeTab && activeTab !== 'saved' ? activeTab : null;
   const activeSelectedSub = selectedSlot ? null : selectedSub;
   const subCategories = effectiveMain ? SUB_CATEGORIES[effectiveMain] : [];
 
@@ -50,8 +68,25 @@ export function WardrobePanel() {
     return wardrobeItems.filter((item) => categories.includes(item.category));
   }, [activeSelectedSub, effectiveMain, wardrobeItems]);
 
-  const handleSelectMain = (main: MainCategory) => {
-    setSelectedMain(main);
+  const handleSelectRootTab = (tab: 'garments' | 'saved') => {
+    if (tab === 'saved') {
+      setSelectedTab('saved');
+      setNavLevel('root');
+    } else {
+      setSelectedTab(null);
+      setNavLevel('garments');
+    }
+    setSelectedSub(null);
+  };
+
+  const handleSelectCategory = (category: MainCategory) => {
+    setSelectedTab(category);
+    setSelectedSub(null);
+  };
+
+  const handleBackToRoot = () => {
+    setNavLevel('root');
+    setSelectedTab(null);
     setSelectedSub(null);
   };
 
@@ -184,43 +219,79 @@ export function WardrobePanel() {
   };
 
   return (
-    <Card className="flex h-full min-h-0 flex-col border-[var(--border-strong)]" padding="none">
-      <div className="flex-none border-b border-[var(--border)] px-4 py-4">
+    <section className="flex h-full min-h-0 flex-col bg-transparent px-1">
+      <div className="flex-none px-4 py-3">
         <p className="eyebrow text-[var(--text-muted)]">Wardrobe rail</p>
-        <h2 className="mt-2 text-lg font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
-          Pull pieces into the canvas
+        <h2 className="mt-1 text-sm font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]">
+          Wardrobe
         </h2>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          <span className="border border-[var(--border)] px-2.5 py-1.5">
-            {formatSlotLabel(selectedSlot)}
-          </span>
-          <span className="border border-[var(--border)] px-2.5 py-1.5">
-            {filteredItems.length} visible item{filteredItems.length === 1 ? '' : 's'}
-          </span>
-        </div>
       </div>
 
-      <div className="flex-none border-b border-[var(--border)] p-3">
-        <div className="grid grid-cols-2 gap-2">
-          {MAIN_CATEGORIES.map((main) => {
-            const isActive = effectiveMain === main;
-
-            return (
+      <div className="flex-none px-3 pb-3">
+        <div className="relative overflow-hidden">
+          <div
+            className={[
+              'flex transition-transform duration-300 ease-out',
+              navLevel === 'root' ? '-translate-x-0' : '-translate-x-full',
+            ].join(' ')}
+          >
+            <div className="flex w-full shrink-0 gap-2">
               <button
-                key={main}
                 type="button"
-                onClick={() => handleSelectMain(main)}
+                onClick={() => handleSelectRootTab('garments')}
                 className={[
-                  'border px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.22em] transition-colors',
-                  isActive
-                    ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
-                    : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+                  'flex-1 px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.22em] transition-colors',
+                  navLevel === 'garments' || (activeTab && activeTab !== 'saved')
+                    ? 'bg-[color:rgba(17,17,17,0.08)] text-[var(--text-primary)]'
+                    : 'bg-[color:rgba(251,251,248,0.52)] text-[var(--text-secondary)] hover:bg-[color:rgba(17,17,17,0.06)] hover:text-[var(--text-primary)]',
                 ].join(' ')}
               >
-                {MAIN_CATEGORY_LABELS[main]}
+                Garments
               </button>
-            );
-          })}
+              <button
+                type="button"
+                onClick={() => handleSelectRootTab('saved')}
+                className={[
+                  'flex-1 px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.22em] transition-colors',
+                  activeTab === 'saved'
+                    ? 'bg-[color:rgba(17,17,17,0.08)] text-[var(--text-primary)]'
+                    : 'bg-[color:rgba(251,251,248,0.52)] text-[var(--text-secondary)] hover:bg-[color:rgba(17,17,17,0.06)] hover:text-[var(--text-primary)]',
+                ].join(' ')}
+              >
+                Saved
+              </button>
+            </div>
+
+            <div className="flex w-full shrink-0 gap-2">
+              <button
+                type="button"
+                onClick={handleBackToRoot}
+                className="flex items-center justify-center px-2 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              {MAIN_CATEGORIES.map((tab) => {
+                const isActive = activeTab === tab;
+                const label = MAIN_CATEGORY_LABELS[tab];
+
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => handleSelectCategory(tab)}
+                    className={[
+                      'flex-1 px-2 py-2 text-left text-[10px] font-medium uppercase tracking-[0.22em] transition-colors',
+                      isActive
+                        ? 'bg-[color:rgba(17,17,17,0.08)] text-[var(--text-primary)]'
+                        : 'bg-[color:rgba(251,251,248,0.52)] text-[var(--text-secondary)] hover:bg-[color:rgba(17,17,17,0.06)] hover:text-[var(--text-primary)]',
+                    ].join(' ')}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {effectiveMain ? (
@@ -229,10 +300,10 @@ export function WardrobePanel() {
               type="button"
               onClick={() => setSelectedSub(null)}
               className={[
-                'border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
+                'px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
                 !activeSelectedSub
-                  ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
-                  : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+                  ? 'bg-[color:rgba(17,17,17,0.08)] text-[var(--text-primary)]'
+                  : 'bg-[color:rgba(251,251,248,0.52)] text-[var(--text-secondary)] hover:bg-[color:rgba(17,17,17,0.06)] hover:text-[var(--text-primary)]',
               ].join(' ')}
             >
               All
@@ -243,10 +314,10 @@ export function WardrobePanel() {
                 type="button"
                 onClick={() => setSelectedSub(sub)}
                 className={[
-                  'border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
+                  'px-3 py-2 text-[10px] font-medium uppercase tracking-[0.22em] whitespace-nowrap transition-colors',
                   activeSelectedSub === sub
-                    ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
-                    : 'border-[var(--border)] bg-[var(--bg)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
+                    ? 'bg-[color:rgba(17,17,17,0.08)] text-[var(--text-primary)]'
+                    : 'bg-[color:rgba(251,251,248,0.52)] text-[var(--text-secondary)] hover:bg-[color:rgba(17,17,17,0.06)] hover:text-[var(--text-primary)]',
                 ].join(' ')}
               >
                 {sub}
@@ -257,22 +328,69 @@ export function WardrobePanel() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        {isLoading ? (
+        {activeTab === 'saved' ? (
+          isBootstrapping ? (
+            <SurfaceMessage
+              className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
+              description="Collecting saved compositions from the archive."
+              kicker="Loading"
+              title="Syncing saved looks"
+            />
+          ) : outfits.length === 0 ? (
+            <SurfaceMessage
+              className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
+              description="The archive is empty. Save the current composition to build a reusable outfit catalog."
+              kicker="No saved looks"
+              title="Start the archive"
+            />
+          ) : (
+            <>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                {saveState === 'saved' ? (
+                  <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-primary)]">
+                    <Check className="h-4 w-4" />
+                    Saved
+                  </div>
+                ) : (
+                  <div />
+                )}
+                <Button
+                  disabled={isRefreshDisabled}
+                  onClick={onRefreshSavedLooks}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid gap-4">
+                {outfits.map((outfit) => (
+                  <OutfitCard
+                    key={outfit.id}
+                    onDelete={onDeleteSavedLook}
+                    onSelect={onLoadSavedLook}
+                    outfit={outfit}
+                  />
+                ))}
+              </div>
+            </>
+          )
+        ) : isLoading ? (
           <SurfaceMessage
-            className="h-full px-4 py-6"
+            className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
             description="Pulling wardrobe inventory into the selection rail."
             kicker="Loading"
             title="Preparing pieces"
           />
         ) : filteredItems.length === 0 ? (
           <SurfaceMessage
-            className="h-full px-4 py-6"
+            className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
             description="No wardrobe items match this selection. Add inventory or switch to another category edit."
             kicker="Empty rail"
             title="No pieces available"
           />
         ) : (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {filteredItems.map((item) => {
               const imageUrl = getItemImageUrl(item.image_path);
               const inCanvas = isItemInCanvas(item.id);
@@ -283,13 +401,11 @@ export function WardrobePanel() {
                   type="button"
                   onClick={() => handleSelectItem(item)}
                   className={[
-                    'group flex flex-col border p-3 text-left transition-colors',
-                    inCanvas
-                      ? 'border-[var(--border-strong)] bg-[var(--bg)]'
-                      : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--border-strong)] hover:bg-[var(--bg)]',
+                    'group flex flex-col bg-transparent p-2 text-left transition-opacity',
+                    inCanvas ? 'opacity-100' : 'opacity-86 hover:opacity-100',
                   ].join(' ')}
                 >
-                  <div className="flex aspect-square items-center justify-center border border-[var(--border)] bg-[color:rgba(244,244,239,0.65)] p-4">
+                  <div className="flex aspect-square items-center justify-center bg-[color:rgba(244,244,239,0.28)] p-4">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
@@ -312,11 +428,11 @@ export function WardrobePanel() {
                       </p>
                     </div>
                     {inCanvas ? (
-                      <span className="inline-flex h-8 w-8 items-center justify-center border border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]">
+                      <span className="inline-flex h-8 w-8 items-center justify-center bg-[var(--surface-inverse)] text-[var(--text-inverse)]">
                         <Check className="h-4 w-4" />
                       </span>
                     ) : (
-                      <span className="inline-flex h-8 w-8 items-center justify-center border border-[var(--border)] text-[var(--text-muted)] group-hover:border-[var(--border-strong)] group-hover:text-[var(--text-primary)]">
+                      <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--text-primary)]">
                         <Sparkles className="h-4 w-4" />
                       </span>
                     )}
@@ -342,6 +458,6 @@ export function WardrobePanel() {
           pendingItem={pendingItem}
         />
       ) : null}
-    </Card>
+    </section>
   );
 }

@@ -14,10 +14,6 @@ vi.mock('../components/WardrobePanel', () => ({
   WardrobePanel: () => <aside data-testid="wardrobe-panel">Wardrobe panel</aside>,
 }));
 
-vi.mock('../components/builder/SavedLooksPanel', () => ({
-  SavedLooksPanel: () => <aside data-testid="saved-looks-panel">Saved looks panel</aside>,
-}));
-
 let fetchOutfitsMock: MockedFunction<() => Promise<void>>;
 let fetchItemsMock: MockedFunction<() => Promise<void>>;
 
@@ -62,17 +58,17 @@ describe('OutfitBuilderPage', () => {
     expect(canvasRow).toHaveClass('builder-canvas-row');
 
     const canvasArea = container.querySelector('.canvas-area');
-    expect(canvasArea).toHaveClass('canvas-area', 'min-h-0', 'flex-1', 'overflow-hidden', 'p-3');
+    expect(canvasArea).toHaveClass('canvas-area', 'min-h-0', 'flex-1', 'overflow-hidden');
 
     const controlsRow = container.querySelector('.builder-controls');
     expect(controlsRow).toHaveClass('builder-controls', 'flex', 'items-center', 'justify-between');
 
-    expect(screen.getByTestId('saved-looks-panel')).toBeInTheDocument();
     expect(screen.getByTestId('outfit-canvas')).toBeInTheDocument();
     expect(screen.getByTestId('wardrobe-panel')).toBeInTheDocument();
+    expect(screen.getByText(/outfit atelier/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /new look/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /save look/i })).toBeDisabled();
-    expect(screen.getAllByText(/canvas empty/i)).toHaveLength(2);
+    expect(screen.getByText(/^new look$/i, { selector: 'div' })).toBeInTheDocument();
   });
 
   it('loads wardrobe and outfit data when the page mounts', () => {

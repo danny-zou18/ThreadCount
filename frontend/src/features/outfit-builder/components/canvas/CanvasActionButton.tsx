@@ -15,7 +15,8 @@ export function CanvasActionButton({
     <button
       type={type}
       className={clsx(
-        'inline-flex items-center justify-center border border-[var(--border-strong)] bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors',
+        'inline-flex items-center justify-center bg-[var(--bg-elevated)] text-[var(--text-primary)] opacity-0 transition-all duration-200',
+        'group-hover:opacity-100 group-focus-within:opacity-100 hover:opacity-100 focus:opacity-100',
         'hover:bg-[var(--surface-inverse)] hover:text-[var(--text-inverse)]',
         'focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
         'disabled:cursor-not-allowed disabled:opacity-40',
