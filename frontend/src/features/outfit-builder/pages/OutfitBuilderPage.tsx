@@ -4,11 +4,8 @@ import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
 import { OutfitCanvas } from '../components/OutfitCanvas';
 import { WardrobePanel } from '../components/WardrobePanel';
-import { BuilderMetric } from '../components/builder/BuilderMetric';
 import { SaveOutfitModal } from '../components/builder/SaveOutfitModal';
-import { SavedLooksPanel } from '../components/builder/SavedLooksPanel';
 import { Button } from '@/shared/ui/Button';
-import { Card } from '@/shared/ui/Card';
 import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 
 export function OutfitBuilderPage() {
@@ -54,13 +51,6 @@ export function OutfitBuilderPage() {
     [canvas],
   );
 
-  const totalCanvasItems =
-    canvas.top.length +
-    (canvas.bottom ? 1 : 0) +
-    (canvas.shoes ? 1 : 0) +
-    canvas.accessoriesLeft.length +
-    canvas.accessoriesRight.length;
-
   const isBootstrapping =
     (isLoading && outfits.length === 0) || (isWardrobeLoading && wardrobeItems.length === 0);
   const isRefreshDisabled = isLoading || isWardrobeLoading;
@@ -96,49 +86,22 @@ export function OutfitBuilderPage() {
   return (
     <div className="builder-shell page-enter bg-[var(--bg)]">
       <section className="builder-canvas-row px-[var(--page-px)] pt-5 pb-5">
-        <div className="grid h-full min-h-0 grid-cols-[minmax(240px,0.7fr)_minmax(0,1.5fr)_minmax(260px,0.82fr)] gap-5 overflow-hidden">
-          <div className="min-h-0 overflow-hidden">
-            <SavedLooksPanel
-              isBootstrapping={isBootstrapping}
-              isRefreshDisabled={isRefreshDisabled}
-              onDelete={(outfitId) => void useOutfitBuilderStore.getState().deleteOutfit(outfitId)}
-              onLoad={(selectedOutfit) => void loadOutfit(selectedOutfit)}
-              onRefresh={handleReload}
-              outfits={outfits}
-              saveState={saveState}
-            />
-          </div>
-
-          <Card
-            className="flex min-h-0 flex-col overflow-hidden border-[var(--border-strong)]"
-            padding="none"
-          >
-            <div className="flex flex-none items-start justify-between gap-4 border-b border-[var(--border)] px-5 py-4">
+        <div className="grid h-full min-h-0 grid-cols-[minmax(0,1.58fr)_minmax(280px,0.92fr)] gap-6 overflow-hidden">
+          <section className="flex min-h-0 flex-col overflow-hidden bg-transparent">
+            <div className="flex flex-none items-start justify-between gap-4 px-1 pb-2">
               <div className="min-w-0">
                 <p className="eyebrow text-[var(--text-muted)]">Outfit atelier</p>
-                <h1 className="mt-2 text-[clamp(1.45rem,1.8vw,2.5rem)] font-semibold uppercase leading-none tracking-[0.08em] text-[var(--text-primary)]">
-                  Outfit Builder
-                </h1>
-                <p className="mt-2 max-w-2xl text-[13px] leading-5 text-[var(--text-secondary)]">
-                  Compose silhouettes, stack layers, and keep the entire canvas visible inside a
-                  locked viewport studio.
+              </div>
+              {currentOutfit ? (
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  {currentOutfit.name || 'Untitled look'}
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                <span className="border border-[var(--border)] px-2.5 py-1.5">
-                  {currentOutfit
-                    ? `Editing ${currentOutfit.name || 'untitled look'}`
-                    : 'New composition'}
-                </span>
-                <span className="border border-[var(--border)] px-2.5 py-1.5">
-                  {hasItems ? 'Canvas populated' : 'Canvas empty'}
-                </span>
-              </div>
+              ) : null}
             </div>
 
             {error ? (
               <div
-                className="flex flex-none items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--bg-elevated)] px-5 py-3 text-sm text-[var(--text-primary)]"
+                className="mb-3 flex flex-none items-center justify-between gap-4 bg-[color:rgba(251,251,248,0.74)] px-4 py-3 text-sm text-[var(--text-primary)]"
                 role="alert"
               >
                 <div className="flex items-start gap-3">
@@ -157,19 +120,7 @@ export function OutfitBuilderPage() {
               </div>
             ) : null}
 
-            <div className="flex flex-none gap-3 border-b border-[var(--border)] px-5 py-3">
-              <BuilderMetric
-                label="Active items"
-                value={String(totalCanvasItems).padStart(2, '0')}
-              />
-              <BuilderMetric label="Saved looks" value={String(outfits.length).padStart(2, '0')} />
-              <BuilderMetric
-                label="Wardrobe ready"
-                value={String(wardrobeItems.length).padStart(2, '0')}
-              />
-            </div>
-
-            <div className="canvas-area min-h-0 flex-1 overflow-hidden p-3">
+            <div className="canvas-area min-h-0 flex-1 overflow-hidden">
               {isBootstrapping ? (
                 <SurfaceMessage
                   className="flex h-full min-h-0 items-center justify-center"
@@ -181,22 +132,27 @@ export function OutfitBuilderPage() {
                 <OutfitCanvas />
               )}
             </div>
-          </Card>
+          </section>
 
-          <div className="min-h-0 overflow-hidden">
-            <WardrobePanel />
+          <div className="min-h-0 overflow-hidden bg-transparent">
+            <WardrobePanel
+              isBootstrapping={isBootstrapping}
+              isRefreshDisabled={isRefreshDisabled}
+              onDeleteSavedLook={(outfitId) =>
+                void useOutfitBuilderStore.getState().deleteOutfit(outfitId)
+              }
+              onLoadSavedLook={(selectedOutfit) => void loadOutfit(selectedOutfit)}
+              onRefreshSavedLooks={handleReload}
+              outfits={outfits}
+              saveState={saveState}
+            />
           </div>
         </div>
       </section>
 
       <div className="builder-controls flex items-center justify-between gap-6 px-[var(--page-px)]">
-        <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-          <span>
-            {hasItems
-              ? `${totalCanvasItems} item${totalCanvasItems === 1 ? '' : 's'} active`
-              : 'Canvas empty'}
-          </span>
-          <span>{currentOutfit ? 'Edit mode' : 'Draft mode'}</span>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          {currentOutfit ? 'Editing look' : 'New look'}
         </div>
         <div className="flex items-center gap-3">
           <Button onClick={handleNewOutfit} size="sm" variant="secondary">
