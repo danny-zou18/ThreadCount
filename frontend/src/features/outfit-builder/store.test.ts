@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useOutfitBuilderStore } from './store';
 import type { OutfitItem } from './types';
 import type { Category } from '@/features/wardrobe/types';
+
+vi.mock('@/shared/api/supabase');
 
 const createMockItem = (id: string, name: string, category: Category): OutfitItem => ({
   id,

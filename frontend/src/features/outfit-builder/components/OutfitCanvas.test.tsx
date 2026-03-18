@@ -6,6 +6,8 @@ import { useOutfitBuilderStore } from '../store';
 import type { OutfitItem } from '../types';
 import type { Category } from '@/features/wardrobe/types';
 
+vi.mock('@/shared/api/supabase');
+
 vi.mock('../api', () => ({
   getItemImageUrl: (path: string | null) => (path ? `https://cdn.test/${path}` : null),
 }));
