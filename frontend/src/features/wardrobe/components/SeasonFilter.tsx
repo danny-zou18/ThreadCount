@@ -16,16 +16,18 @@ export function SeasonFilter({ selectedSeasons, onSeasonChange }: SeasonFilterPr
   };
 
   return (
-    <div className="flex gap-2">
+    <div aria-label="Filter wardrobe by season" className="flex flex-wrap gap-2" role="group">
       {SEASONS.map((season) => (
         <button
           key={season}
           onClick={() => toggleSeason(season)}
+          type="button"
+          aria-pressed={selectedSeasons.includes(season)}
           className={clsx(
-            'px-3 py-1.5 text-xs rounded-full border whitespace-nowrap transition-colors',
+            'border px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] whitespace-nowrap transition-colors',
             selectedSeasons.includes(season)
-              ? 'bg-[var(--text-primary)] text-[var(--bg)] border-[var(--text-primary)]'
-              : 'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]',
+              ? 'border-[var(--border-strong)] bg-[var(--surface-inverse)] text-[var(--text-inverse)]'
+              : 'border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
           )}
         >
           {SEASON_LABELS[season]}

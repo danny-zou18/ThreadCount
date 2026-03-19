@@ -1,13 +1,28 @@
-import { useEffect, useState } from 'react';
+import { type KeyboardEvent, useEffect, useState } from 'react';
 import { useWardrobeStore } from '../store';
 import { CATEGORY_LABELS, type Category, type WardrobeItem, type Season } from '../types';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { Input } from '@/shared/ui/Input';
+import { PageIntro } from '@/shared/ui/PageIntro';
+import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 import { WardrobeGrid } from '../components/WardrobeGrid';
 import { CategoryFilter } from '../components/CategoryFilter';
 import { SeasonFilter } from '../components/SeasonFilter';
 import { ColorFilter } from '../components/ColorFilter';
 import { UploadModal } from '../components/UploadModal';
 import { EditItemModal } from '../components/EditItemModal';
+
+function WardrobeMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-[var(--border)] bg-[var(--bg-elevated)] p-5">
+      <p className="eyebrow text-[var(--text-muted)]">{label}</p>
+      <p className="mt-4 text-4xl font-semibold uppercase leading-none tracking-[0.08em] text-[var(--text-primary)]">
+        {value}
+      </p>
+    </div>
+  );
+}
 
 export function WardrobePage() {
   const { items, isLoading, error, filters, fetchItems, setFilters, clearError } =
@@ -27,10 +42,11 @@ export function WardrobePage() {
   };
 
   const handleSearch = () => {
-    setFilters({ ...filters, search: searchQuery || undefined });
+    const normalizedQuery = searchQuery.trim();
+    setFilters({ ...filters, search: normalizedQuery || undefined });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -53,102 +69,165 @@ export function WardrobePage() {
 
   const hasActiveFilters =
     filters.search || filters.colors?.length || filters.seasons?.length || filters.category;
+  const activeFilterCount = [
+    filters.search ? 1 : 0,
+    filters.colors?.length ? 1 : 0,
+    filters.seasons?.length ? 1 : 0,
+    filters.category ? 1 : 0,
+  ].reduce((sum, count) => sum + count, 0);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-end justify-between mb-4">
-          <h1
-            className="text-4xl text-[var(--text-primary)]"
-            style={{ fontFamily: 'var(--font-serif)' }}
+    <div className="page-enter min-h-screen bg-[var(--bg)] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <PageIntro
+            className="flex-1"
+            description="Refine your archive with clean filters, sharp metadata, and a stricter monochrome wardrobe presentation."
+            eyebrow="Wardrobe archive"
+            title="My Wardrobe"
+          />
+          <Button
+            className="self-start xl:mb-6"
+            onClick={() => setIsUploadModalOpen(true)}
+            size="lg"
           >
-            My Wardrobe
-          </h1>
-          <Button onClick={() => setIsUploadModalOpen(true)}>+ Add Item</Button>
+            Add Item
+          </Button>
         </div>
-        <div className="border-t border-[var(--border-strong)] mb-8" />
 
         {error && (
-          <div className="mb-4 p-3 bg-[var(--error)] bg-opacity-10 border border-[var(--error)] rounded text-sm text-[var(--error)]">
-            {error}
-            <button onClick={clearError} className="ml-2 underline">
+          <div
+            className="flex flex-col gap-3 border border-[var(--border-strong)] bg-[var(--bg-elevated)] p-4 text-sm text-[var(--text-primary)] sm:flex-row sm:items-center sm:justify-between"
+            role="alert"
+          >
+            <p>{error}</p>
+            <Button
+              className="self-start sm:self-auto"
+              onClick={clearError}
+              size="sm"
+              variant="secondary"
+            >
               Dismiss
-            </button>
+            </Button>
           </div>
         )}
 
-        <div className="flex gap-3 mb-4">
-          <div className="flex-1 flex gap-2">
-            <input
-              type="text"
-              placeholder="Search by name or tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 px-3 py-2 bg-[var(--bg)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(280px,0.8fr)]">
+          <Card className="border-[var(--border-strong)]" padding="sm">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+              <Input
+                className="border-[var(--border-strong)] bg-[var(--bg)]"
+                id="wardrobe-search"
+                label="Search archive"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Name, label, or detail"
+                value={searchQuery}
+              />
+              <Button className="w-full lg:w-auto" onClick={handleSearch} size="md">
+                Search
+              </Button>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-5">
+              <Button
+                aria-expanded={showColorFilter}
+                onClick={() => setShowColorFilter(!showColorFilter)}
+                size="sm"
+                variant={showColorFilter ? 'primary' : 'secondary'}
+              >
+                Colors
+              </Button>
+              <Button
+                aria-expanded={showSeasonFilter}
+                onClick={() => setShowSeasonFilter(!showSeasonFilter)}
+                size="sm"
+                variant={showSeasonFilter ? 'primary' : 'secondary'}
+              >
+                Seasons
+              </Button>
+              {hasActiveFilters && (
+                <Button onClick={handleClearFilters} size="sm" variant="ghost">
+                  Clear all
+                </Button>
+              )}
+              <p className="ml-auto text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                {activeFilterCount === 0
+                  ? 'No active filters'
+                  : `${activeFilterCount} filter${activeFilterCount === 1 ? '' : 's'} active`}
+              </p>
+            </div>
+
+            {(showColorFilter || showSeasonFilter) && (
+              <div className="mt-5 grid gap-4 border-t border-[var(--border)] pt-5 lg:grid-cols-2">
+                {showColorFilter && (
+                  <div className="space-y-3 border border-[var(--border)] bg-[var(--bg)] p-4">
+                    <p className="eyebrow text-[var(--text-muted)]">Color edit</p>
+                    <ColorFilter
+                      onColorChange={handleColorChange}
+                      selectedColors={filters.colors || []}
+                    />
+                  </div>
+                )}
+                {showSeasonFilter && (
+                  <div className="space-y-3 border border-[var(--border)] bg-[var(--bg)] p-4">
+                    <p className="eyebrow text-[var(--text-muted)]">Season edit</p>
+                    <SeasonFilter
+                      onSeasonChange={handleSeasonChange}
+                      selectedSeasons={filters.seasons || []}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <WardrobeMetric label="Visible items" value={String(items.length).padStart(2, '0')} />
+            <WardrobeMetric
+              label="Current focus"
+              value={filters.category ? CATEGORY_LABELS[filters.category] : 'All'}
             />
-            <Button onClick={handleSearch}>Search</Button>
           </div>
-          <Button
-            variant={showColorFilter ? 'primary' : 'ghost'}
-            onClick={() => setShowColorFilter(!showColorFilter)}
-          >
-            Colors
-          </Button>
-          <Button
-            variant={showSeasonFilter ? 'primary' : 'ghost'}
-            onClick={() => setShowSeasonFilter(!showSeasonFilter)}
-          >
-            Seasons
-          </Button>
-          {hasActiveFilters && (
-            <Button variant="ghost" onClick={handleClearFilters}>
-              Clear All
-            </Button>
-          )}
         </div>
 
-        {showColorFilter && (
-          <div className="mb-4 p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
-              Filter by colors
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="eyebrow text-[var(--text-muted)]">Category index</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+                Move between wardrobe groups without leaving the archive.
+              </p>
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {filters.search ? `Search: ${filters.search}` : 'Showing full collection'}
             </p>
-            <ColorFilter selectedColors={filters.colors || []} onColorChange={handleColorChange} />
           </div>
-        )}
 
-        {showSeasonFilter && (
-          <div className="mb-4 p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border)]">
-            <p className="text-xs text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
-              Filter by seasons
-            </p>
-            <SeasonFilter
-              selectedSeasons={filters.seasons || []}
-              onSeasonChange={handleSeasonChange}
-            />
-          </div>
-        )}
-
-        <CategoryFilter
-          selectedCategory={filters.category}
-          onCategoryChange={handleCategoryChange}
-        />
+          <CategoryFilter
+            selectedCategory={filters.category}
+            onCategoryChange={handleCategoryChange}
+          />
+        </section>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-sm text-[var(--text-secondary)]">Loading your wardrobe...</p>
-          </div>
+          <SurfaceMessage
+            description="Pulling your wardrobe records into the archive."
+            kicker="Loading"
+            title="Preparing inventory"
+          />
         ) : items.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-sm text-[var(--text-secondary)] mb-4">
-              {hasActiveFilters
-                ? 'No items match your filters'
+          <SurfaceMessage
+            description={
+              hasActiveFilters
+                ? 'No items match the current filter set. Clear a filter or widen the search.'
                 : filters.category
-                  ? `No ${CATEGORY_LABELS[filters.category].toLowerCase()} in your wardrobe yet.`
-                  : 'Your wardrobe is empty. Start by adding some items!'}
-            </p>
-            <Button onClick={() => setIsUploadModalOpen(true)}>Add Your First Item</Button>
-          </div>
+                  ? `No ${CATEGORY_LABELS[filters.category].toLowerCase()} are stored in this category yet.`
+                  : 'Your archive is empty. Start the collection with a first upload.'
+            }
+            kicker={hasActiveFilters ? 'No match' : 'Empty archive'}
+            title={hasActiveFilters ? 'Adjust the edit' : 'Add your first item'}
+          />
         ) : (
           <WardrobeGrid items={items} onItemClick={setEditingItem} />
         )}

@@ -50,14 +50,14 @@ backend/
 
     ```bash
     cd backend
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    python3.12 -m venv .venv
+    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
     ```
 
 2.  **Install Dependencies**:
 
     ```bash
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
     ```
 
 3.  **Configure Environment**:
@@ -78,9 +78,15 @@ backend/
     ```
 
 4.  **Run Server**:
-    ```bash
-    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-    ```
+     ```bash
+     python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+     ```
+
+### Why `python -m uvicorn`?
+
+- `uvicorn ...` uses whichever `uvicorn` executable appears first on your shell `PATH`.
+- On this machine, that currently resolves to a global Python 3.9 install.
+- `python -m uvicorn ...` guarantees that Uvicorn runs with the active interpreter from `.venv`, which should be Python 3.12.
 
 ## API Endpoints
 
@@ -98,6 +104,7 @@ backend/
 
 ## Security
 
-- **CORS**: Currently allows all origins in development (`.*` regex). Must be restricted in production.
+- **CORS**: Configured for localhost origins (`http://localhost:5173`, `http://localhost:3000`). Must be updated with production domain(s) before deployment.
 - **Supabase Admin**: The backend uses the Service Role key (or Anon key with high permissions) to bypass RLS for orchestration.
 - **Secrets**: API keys (fal.ai) are stored server-side to prevent exposure in the browser.
+- **Environment Variables**: See `ENV_SETUP.md` for complete guide on configuring secrets.

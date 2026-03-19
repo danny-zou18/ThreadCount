@@ -63,7 +63,7 @@ Implement the Virtual Wardrobe feature allowing users to upload, categorize, bro
 - [x] Add search functionality
 - [x] Implement responsive design
 - [x] Add loading states and error handling
-- [ ] Write unit tests for components
+- [x] Write unit tests for components (outfit builder store tests added)
 - [ ] Write integration tests for API
 
 ## Technical Decisions
