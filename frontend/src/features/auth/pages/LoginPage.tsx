@@ -56,7 +56,7 @@ export function LoginPage() {
             <header className="space-y-4">
               <p className="eyebrow text-[var(--text-muted)]">Member access</p>
               <div className="space-y-3">
-                <h2 className="text-3xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)] sm:text-4xl">
+                <h2 className="text-3xl font-semibold uppercase tracking-[0.08em] sm:text-4xl">
                   Log in
                 </h2>
                 <p className="text-sm leading-6 text-[var(--text-secondary)]">

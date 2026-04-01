@@ -35,7 +35,7 @@ export function WardrobeModalFrame({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[color:rgba(17,17,17,0.78)] px-4 py-6 sm:px-6"
+      className="fixed inset-0 z-50 px-4 py-6 sm:px-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose();
