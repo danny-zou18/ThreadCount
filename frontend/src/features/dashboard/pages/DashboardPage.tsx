@@ -66,7 +66,7 @@ export function DashboardPage() {
           className="flex-1"
           eyebrow="Dashboard"
           title="Your private fashion workspace is live."
-          description={`Welcome back${user?.email ? `, ${user.email}` : ''}. Review the model canvas, verify the archive status, and return to styling.`}
+          description={`Welcome back${user?.email ? `, ${user.email}` : ''}. Review the model canvas, verify the wardrobe status, and return to styling.`}
         />
         <Button
           variant="ghost"
@@ -207,12 +207,26 @@ export function DashboardPage() {
             </div>
           </Card>
 
-          <SurfaceMessage
-            kicker="Next"
-            title="Continue into the archive"
-            description="Use the wardrobe to manage garments or move into the builder to start composing the next silhouette."
-            className="text-left"
-          />
+          <Card padding="md">
+            <p className="eyebrow text-[var(--text-muted)]">Next</p>
+            <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+              Continue into the wardrobe
+            </p>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+              Use the wardrobe to manage garments or move into the builder to start composing the next silhouette.
+            </p>
+            <div className="mt-6 space-y-3">
+
+              <Button
+                size="sm"
+                onClick={() => navigate('/onboarding')}
+                className="w-full"
+              >
+                Continue to Wardrobe
+              </Button>
+            </div>
+          </Card>
+
         </aside>
       </div>
     </div>

@@ -332,16 +332,16 @@ export function WardrobePanel({
           isBootstrapping ? (
             <SurfaceMessage
               className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
-              description="Collecting saved compositions from the archive."
+              description="Collecting saved compositions from the wardrobe."
               kicker="Loading"
               title="Syncing saved looks"
             />
           ) : outfits.length === 0 ? (
             <SurfaceMessage
               className="h-full border-0 bg-transparent px-0 py-6 text-left shadow-none"
-              description="The archive is empty. Save the current composition to build a reusable outfit catalog."
+              description="The wardrobe is empty. Save the current composition to build a reusable outfit catalog."
               kicker="No saved looks"
-              title="Start the archive"
+              title="Start the wardrobe"
             />
           ) : (
             <>

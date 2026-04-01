@@ -122,7 +122,7 @@ export function EditItemModal({ isOpen, item, onClose }: EditItemModalProps) {
               Delete Item
             </h3>
             <p className="mx-auto max-w-xl text-sm leading-6 text-[var(--text-secondary)]">
-              Remove {item.name} from the archive. This action cannot be undone.
+              Remove {item.name} from the wardrobe. This action cannot be undone.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
