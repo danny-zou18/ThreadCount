@@ -26,12 +26,12 @@ export function SaveOutfitModal({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="eyebrow text-[var(--text-muted)]">Archive outfit</p>
+            <p className="eyebrow text-[var(--text-muted)]">Wardrobe outfit</p>
             <h2 className="mt-3 text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
               Save current composition
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
-              Preserve this build inside the monochrome archive and return to it later.
+              Preserve this build inside the monochrome wardrobe and return to it later.
             </p>
           </div>
           <button

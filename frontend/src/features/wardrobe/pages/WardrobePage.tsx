@@ -82,8 +82,8 @@ export function WardrobePage() {
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <PageIntro
             className="flex-1"
-            description="Refine your archive with clean filters, sharp metadata, and a stricter monochrome wardrobe presentation."
-            eyebrow="Wardrobe archive"
+            description="Refine your wardrobe with clean filters, sharp metadata, and a stricter monochrome wardrobe presentation."
+            eyebrow="Wardrobe"
             title="My Wardrobe"
           />
           <Button
@@ -118,7 +118,7 @@ export function WardrobePage() {
               <Input
                 className="border-[var(--border-strong)] bg-[var(--bg)]"
                 id="wardrobe-search"
-                label="Search archive"
+                label="Search wardrobe"
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Name, label, or detail"
@@ -196,7 +196,7 @@ export function WardrobePage() {
             <div>
               <p className="eyebrow text-[var(--text-muted)]">Category index</p>
               <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                Move between wardrobe groups without leaving the archive.
+                Move between wardrobe groups without leaving the wardrobe.
               </p>
             </div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
@@ -212,7 +212,7 @@ export function WardrobePage() {
 
         {isLoading ? (
           <SurfaceMessage
-            description="Pulling your wardrobe records into the archive."
+            description="Pulling your wardrobe records into the wardrobe."
             kicker="Loading"
             title="Preparing inventory"
           />
@@ -223,9 +223,9 @@ export function WardrobePage() {
                 ? 'No items match the current filter set. Clear a filter or widen the search.'
                 : filters.category
                   ? `No ${CATEGORY_LABELS[filters.category].toLowerCase()} are stored in this category yet.`
-                  : 'Your archive is empty. Start the collection with a first upload.'
+                  : 'Your wardrobe is empty. Start the collection with a first upload.'
             }
-            kicker={hasActiveFilters ? 'No match' : 'Empty archive'}
+            kicker={hasActiveFilters ? 'No match' : 'Empty wardrobe'}
             title={hasActiveFilters ? 'Adjust the edit' : 'Add your first item'}
           />
         ) : (
