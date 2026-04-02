@@ -11,7 +11,18 @@ import { CategoryFilter } from '../components/CategoryFilter';
 import { SeasonFilter } from '../components/SeasonFilter';
 import { ColorFilter } from '../components/ColorFilter';
 import { UploadModal } from '../components/UploadModal';
+import { UploadOutfitModal } from '../components/UploadOutfitModal';
 import { EditItemModal } from '../components/EditItemModal';
+import { supabase } from '@/shared/api/supabase';
+import { useAuthStore } from '@/features/auth/store';
+
+interface UploadedOutfit {
+  id: string;
+  name: string | null;
+  item_ids: string[];
+  thumbnail_path: string | null;
+  created_at: string;
+}
 
 function WardrobeMetric({ label, value }: { label: string; value: string }) {
   return (
@@ -27,15 +38,39 @@ function WardrobeMetric({ label, value }: { label: string; value: string }) {
 export function WardrobePage() {
   const { items, isLoading, error, filters, fetchItems, setFilters, clearError } =
     useWardrobeStore();
+  const { user } = useAuthStore();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploadOutfitModalOpen, setIsUploadOutfitModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WardrobeItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showColorFilter, setShowColorFilter] = useState(false);
   const [showSeasonFilter, setShowSeasonFilter] = useState(false);
+  const [uploadedOutfits, setUploadedOutfits] = useState<UploadedOutfit[]>([]);
+  const [isLoadingOutfits, setIsLoadingOutfits] = useState(false);
+
+  const fetchUploadedOutfits = async () => {
+    if (!user) return;
+    setIsLoadingOutfits(true);
+    try {
+      const { data, error: err } = await supabase
+        .from('outfits')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('item_ids', '{}')
+        .order('created_at', { ascending: false });
+      if (err) throw err;
+      setUploadedOutfits(data || []);
+    } catch (err) {
+      console.error('Failed to fetch uploaded outfits:', err);
+    } finally {
+      setIsLoadingOutfits(false);
+    }
+  };
 
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]);
+    fetchUploadedOutfits();
+  }, [fetchItems, user]);
 
   const handleCategoryChange = (category: Category | undefined) => {
     setFilters({ ...filters, category });
@@ -86,13 +121,18 @@ export function WardrobePage() {
             eyebrow="Wardrobe archive"
             title="My Wardrobe"
           />
-          <Button
-            className="self-start xl:mb-6"
-            onClick={() => setIsUploadModalOpen(true)}
-            size="lg"
-          >
-            Add Item
-          </Button>
+          <div className="flex gap-3 self-start xl:mb-6">
+            <Button
+              onClick={() => setIsUploadOutfitModalOpen(true)}
+              size="lg"
+              variant="secondary"
+            >
+              Add Outfit
+            </Button>
+            <Button onClick={() => setIsUploadModalOpen(true)} size="lg">
+              Add Item
+            </Button>
+          </div>
         </div>
 
         {error && (
@@ -231,9 +271,73 @@ export function WardrobePage() {
         ) : (
           <WardrobeGrid items={items} onItemClick={setEditingItem} />
         )}
+
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="eyebrow text-[var(--text-muted)]">Complete looks</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
+                Uploaded outfit photos stored directly in your archive.
+              </p>
+            </div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {uploadedOutfits.length} outfit{uploadedOutfits.length === 1 ? '' : 's'}
+            </p>
+          </div>
+
+          {isLoadingOutfits ? (
+            <SurfaceMessage
+              description="Syncing your uploaded outfits."
+              kicker="Loading"
+              title="Fetching looks"
+            />
+          ) : uploadedOutfits.length === 0 ? (
+            <SurfaceMessage
+              description="Upload complete outfit photos to see them here."
+              kicker="No uploads"
+              title="No uploaded outfits"
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {uploadedOutfits.map((outfit) => (
+                <div
+                  key={outfit.id}
+                  className="group flex flex-col bg-transparent p-2 text-left transition-opacity hover:opacity-100"
+                >
+                  <div className="flex aspect-[0.8] items-center justify-center bg-[color:rgba(244,244,239,0.32)] p-3">
+                    {outfit.thumbnail_path ? (
+                      <img
+                        alt={outfit.name || 'Outfit'}
+                        className="max-h-full max-w-full object-contain"
+                        src={supabase.storage.from('generated').getPublicUrl(outfit.thumbnail_path).publicUrl}
+                      />
+                    ) : (
+                      <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                        No image
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
+                      {outfit.name || 'Untitled outfit'}
+                    </p>
+                    <p className="text-[9px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                      {new Date(outfit.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
 
       <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+      <UploadOutfitModal
+        isOpen={isUploadOutfitModalOpen}
+        onClose={() => setIsUploadOutfitModalOpen(false)}
+        onUploadSuccess={fetchUploadedOutfits}
+      />
       <EditItemModal
         isOpen={!!editingItem}
         item={editingItem}

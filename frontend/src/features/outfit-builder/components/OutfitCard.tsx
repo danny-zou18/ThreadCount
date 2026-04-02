@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import type { KeyboardEvent, MouseEvent } from 'react';
 import type { Outfit } from '../types';
-import { getItemImageUrl } from '../api';
+import { getGeneratedImageUrl } from '../api';
 
 interface OutfitCardProps {
   outfit: Outfit;
@@ -44,7 +44,7 @@ export function OutfitCard({ outfit, onDelete, onSelect }: OutfitCardProps) {
       <div className="flex aspect-[0.95] items-center justify-center bg-[color:rgba(244,244,239,0.32)] p-4">
         {outfit.thumbnail_path ? (
           <img
-            src={getItemImageUrl(outfit.thumbnail_path) || ''}
+            src={getGeneratedImageUrl(outfit.thumbnail_path)}
             alt={outfit.name || 'Outfit'}
             className="max-h-full max-w-full object-contain"
           />
