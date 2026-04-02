@@ -1,6 +1,8 @@
 import { supabase } from '@/shared/api/supabase';
 import type { Outfit, OutfitCreateInput, OutfitUpdateInput } from './types';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 export async function fetchOutfits(userId: string): Promise<Outfit[]> {
   const { data, error } = await supabase
     .from('outfits')
@@ -89,4 +91,90 @@ export function getItemImageUrl(path: string | null): string | null {
   if (!path) return null;
   const { data } = supabase.storage.from('wardrobe').getPublicUrl(path);
   return data.publicUrl;
+}
+
+export interface TryOnResult {
+  status: string;
+  image_id: string;
+  image_path: string;
+  image_url: string;
+}
+
+export async function generateTryOn(
+  userId: string,
+  itemIds: string[],
+  outfitId?: string,
+): Promise<TryOnResult> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  if (!token) {
+    throw new Error('User not authenticated');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/try-on/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      item_ids: itemIds,
+      outfit_id: outfitId || null,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to generate try-on' }));
+    throw new Error(error.detail || 'Failed to generate try-on');
+  }
+
+  return response.json();
+}
+
+export function getGeneratedImageUrl(path: string): string {
+  const { data } = supabase.storage.from('generated').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export interface ThumbnailResult {
+  status: string;
+  thumbnail_path: string;
+  thumbnail_url: string;
+}
+
+export async function generateOutfitThumbnail(
+  userId: string,
+  itemIds: string[],
+): Promise<ThumbnailResult> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  if (!token) {
+    throw new Error('User not authenticated');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/outfits/generate-thumbnail`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      item_ids: itemIds,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to generate thumbnail' }));
+    throw new Error(error.detail || 'Failed to generate thumbnail');
+  }
+
+  return response.json();
 }

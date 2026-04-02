@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { Outfit, OutfitItem, OutfitCanvasState, OutfitSlot } from './types';
 import * as api from './api';
+import type { TryOnResult } from './api';
+import { supabase } from '@/shared/api/supabase';
 import { useAuthStore } from '@/features/auth/store';
 import type { Category } from '@/features/wardrobe/types';
 
@@ -14,6 +16,9 @@ interface OutfitBuilderState {
   topLayerIndex: number;
   accessoryLeftLayerIndex: number;
   accessoryRightLayerIndex: number;
+  generatedImage: TryOnResult | null;
+  isGeneratingTryOn: boolean;
+  tryOnError: string | null;
 
   fetchOutfits: () => Promise<void>;
   addToSlot: (slot: OutfitSlot, item: OutfitItem) => void;
@@ -34,6 +39,8 @@ interface OutfitBuilderState {
   swapTopLayer: () => void;
   swapAccessoryLeftLayer: () => void;
   swapAccessoryRightLayer: () => void;
+  generateTryOn: () => Promise<void>;
+  clearGeneratedImage: () => void;
 }
 
 export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
@@ -52,6 +59,9 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
   topLayerIndex: 0,
   accessoryLeftLayerIndex: 0,
   accessoryRightLayerIndex: 0,
+  generatedImage: null,
+  isGeneratingTryOn: false,
+  tryOnError: null,
 
   fetchOutfits: async () => {
     const user = useAuthStore.getState().user;
@@ -217,6 +227,8 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
       topLayerIndex: 0,
       accessoryLeftLayerIndex: 0,
       accessoryRightLayerIndex: 0,
+      generatedImage: null,
+      tryOnError: null,
     });
   },
 
@@ -253,6 +265,34 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
       } else {
         await api.createOutfit(user.id, { name, item_ids: itemIds });
       }
+
+      try {
+        const thumbnail = await api.generateOutfitThumbnail(user.id, itemIds);
+        if (currentOutfit) {
+          await api.updateOutfit(currentOutfit.id, user.id, { name, item_ids: itemIds });
+          await supabase
+            .from('outfits')
+            .update({ thumbnail_path: thumbnail.thumbnail_path })
+            .eq('id', currentOutfit.id);
+        } else {
+          const { data: newOutfit } = await supabase
+            .from('outfits')
+            .select('id')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          if (newOutfit) {
+            await supabase
+              .from('outfits')
+              .update({ thumbnail_path: thumbnail.thumbnail_path })
+              .eq('id', newOutfit.id);
+          }
+        }
+      } catch (thumbnailError) {
+        logger.warn('Failed to generate thumbnail:', thumbnailError);
+      }
+
       await get().fetchOutfits();
       set({ isLoading: false, currentOutfit: null });
     } catch (error) {
@@ -377,5 +417,48 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     if (canvas.accessoriesRight.length > 1) {
       set({ accessoryRightLayerIndex: accessoryRightLayerIndex === 0 ? 1 : 0 });
     }
+  },
+
+  generateTryOn: async () => {
+    const user = useAuthStore.getState().user;
+    if (!user) {
+      set({ tryOnError: 'User not authenticated', isGeneratingTryOn: false });
+      return;
+    }
+
+    const { canvas, currentOutfit } = get();
+
+    const itemIds = [
+      ...canvas.top.map((item) => item.id),
+      ...(canvas.bottom ? [canvas.bottom.id] : []),
+      ...(canvas.shoes ? [canvas.shoes.id] : []),
+      ...canvas.accessoriesLeft.map((item) => item.id),
+      ...canvas.accessoriesRight.map((item) => item.id),
+    ];
+
+    if (itemIds.length === 0) {
+      set({ tryOnError: 'Add at least one item to the outfit', isGeneratingTryOn: false });
+      return;
+    }
+
+    set({ isGeneratingTryOn: true, tryOnError: null, generatedImage: null });
+
+    try {
+      const result = await api.generateTryOn(
+        user.id,
+        itemIds,
+        currentOutfit?.id,
+      );
+      set({ generatedImage: result, isGeneratingTryOn: false });
+    } catch (error) {
+      set({
+        tryOnError: error instanceof Error ? error.message : 'Failed to generate try-on',
+        isGeneratingTryOn: false,
+      });
+    }
+  },
+
+  clearGeneratedImage: () => {
+    set({ generatedImage: null, tryOnError: null });
   },
 }));

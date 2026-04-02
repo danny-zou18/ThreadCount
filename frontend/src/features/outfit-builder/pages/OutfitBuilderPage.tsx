@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Plus, RefreshCcw, Save } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, Plus, RefreshCcw, Save, Sparkles } from 'lucide-react';
 import { useOutfitBuilderStore } from '../store';
 import { useWardrobeStore } from '@/features/wardrobe/store';
 import { OutfitCanvas } from '../components/OutfitCanvas';
@@ -19,12 +19,18 @@ export function OutfitBuilderPage() {
     loadOutfit,
     outfits,
     saveOutfit,
+    generateTryOn,
+    generatedImage,
+    isGeneratingTryOn,
+    tryOnError,
+    clearGeneratedImage,
   } = useOutfitBuilderStore();
   const { fetchItems, items: wardrobeItems, isLoading: isWardrobeLoading } = useWardrobeStore();
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [outfitName, setOutfitName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const generatedImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void fetchItems();
@@ -39,6 +45,12 @@ export function OutfitBuilderPage() {
     const timer = window.setTimeout(() => setSaveState('idle'), 2400);
     return () => window.clearTimeout(timer);
   }, [saveState]);
+
+  useEffect(() => {
+    if (generatedImage && generatedImageRef.current) {
+      generatedImageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [generatedImage]);
 
   const canvas = useOutfitBuilderStore((state) => state.canvas);
   const hasItems = useMemo(
@@ -163,8 +175,52 @@ export function OutfitBuilderPage() {
             <Save className="h-4 w-4" />
             Save look
           </Button>
+          <Button
+            disabled={!hasItems || isGeneratingTryOn}
+            onClick={() => void generateTryOn()}
+            size="sm"
+          >
+            <Sparkles className="h-4 w-4" />
+            {isGeneratingTryOn ? 'Generating...' : 'Try on'}
+          </Button>
         </div>
       </div>
+
+      {tryOnError && (
+        <div
+          className="mx-[var(--page-px)] mb-4 flex flex-none items-center justify-between gap-4 bg-[color:rgba(251,251,248,0.74)] px-4 py-3 text-sm text-[var(--text-primary)]"
+          role="alert"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>{tryOnError}</p>
+          </div>
+          <Button onClick={clearGeneratedImage} size="sm" variant="ghost">
+            Dismiss
+          </Button>
+        </div>
+      )}
+
+      {generatedImage && (
+        <section
+          ref={generatedImageRef}
+          className="generated-image-section px-[var(--page-px)] pb-8 pt-4"
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <p className="eyebrow text-[var(--text-muted)]">Your look</p>
+            <Button onClick={clearGeneratedImage} size="sm" variant="ghost">
+              Clear
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <img
+              alt="Generated outfit try-on"
+              className="max-h-[600px] rounded-lg object-contain shadow-lg"
+              src={generatedImage.image_url}
+            />
+          </div>
+        </section>
+      )}
 
       {showSaveModal ? (
         <SaveOutfitModal
