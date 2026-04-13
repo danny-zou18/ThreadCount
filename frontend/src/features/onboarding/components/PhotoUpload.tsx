@@ -145,7 +145,7 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
               </div>
               <p className="eyebrow text-[var(--text-muted)]">Upload portrait</p>
               <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]">
-                Drop image or browse archive
+                Drop image or browse wardrobe
               </p>
               <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)]">
                 JPG or PNG. Maximum file size 10MB. Use an uncompromised front-facing shot.

@@ -181,7 +181,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
   return (
     <WardrobeModalFrame
-      description="Upload a clean product image, review the AI metadata, and file the piece into your archive."
+      description="Upload a clean product image, review the AI metadata, and file the piece into your wardrobe."
       onClose={handleClose}
       title="Add Item"
     >

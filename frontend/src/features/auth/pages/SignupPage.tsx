@@ -57,7 +57,7 @@ export function SignupPage() {
                   Sign up
                 </h2>
                 <p className="text-sm leading-6 text-[var(--text-inverse)]/72">
-                  Establish your archive and unlock the finished product surfaces.
+                  Establish your wardrobe and unlock the finished product surfaces.
                 </p>
               </div>
               <hr className="border-0 border-t border-[rgba(255,255,255,0.18)]" />

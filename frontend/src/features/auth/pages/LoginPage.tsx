@@ -24,7 +24,7 @@ export function LoginPage() {
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_34%,rgba(255,255,255,0.08))]" />
           <div className="relative flex h-full flex-col justify-between gap-12">
             <div className="space-y-6">
-              <p className="eyebrow text-[var(--text-inverse)]/72">Seamless Archive</p>
+              <p className="eyebrow text-[var(--text-inverse)]/72">Seamless Wardrobe</p>
               <h1 className="max-w-3xl text-5xl font-semibold uppercase leading-[0.92] tracking-[0.08em] sm:text-6xl xl:text-7xl">
                 Enter the wardrobe gallery.
               </h1>
@@ -56,7 +56,7 @@ export function LoginPage() {
             <header className="space-y-4">
               <p className="eyebrow text-[var(--text-muted)]">Member access</p>
               <div className="space-y-3">
-                <h2 className="text-3xl font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)] sm:text-4xl">
+                <h2 className="text-3xl font-semibold uppercase tracking-[0.08em] sm:text-4xl">
                   Log in
                 </h2>
                 <p className="text-sm leading-6 text-[var(--text-secondary)]">
