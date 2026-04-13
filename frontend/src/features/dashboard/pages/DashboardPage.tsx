@@ -20,7 +20,7 @@ function DashboardMetric({ label, value }: { label: string; value: string }) {
 }
 
 export function DashboardPage() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [avatar, setAvatar] = useState<{
     original_photo_path?: string | null;
