@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useState } from 'react';
+import { type KeyboardEvent, useCallback, useEffect, useState } from 'react';
 import { useWardrobeStore } from '../store';
 import { CATEGORY_LABELS, type Category, type WardrobeItem, type Season } from '../types';
 import { Button } from '@/shared/ui/Button';
@@ -48,7 +48,7 @@ export function WardrobePage() {
   const [uploadedOutfits, setUploadedOutfits] = useState<UploadedOutfit[]>([]);
   const [isLoadingOutfits, setIsLoadingOutfits] = useState(false);
 
-  const fetchUploadedOutfits = async () => {
+  const fetchUploadedOutfits = useCallback(async () => {
     if (!user) return;
     setIsLoadingOutfits(true);
     try {
@@ -65,12 +65,12 @@ export function WardrobePage() {
     } finally {
       setIsLoadingOutfits(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchItems();
     fetchUploadedOutfits();
-  }, [fetchItems, user]);
+  }, [fetchItems, fetchUploadedOutfits]);
 
   const handleCategoryChange = (category: Category | undefined) => {
     setFilters({ ...filters, category });

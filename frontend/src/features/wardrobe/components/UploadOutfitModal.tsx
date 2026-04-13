@@ -13,13 +13,6 @@ interface UploadOutfitModalProps {
   onUploadSuccess: () => void;
 }
 
-interface UploadResult {
-  status: string;
-  outfit_id: string;
-  thumbnail_path: string;
-  thumbnail_url: string;
-}
-
 export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOutfitModalProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -126,7 +119,7 @@ export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOu
         throw new Error(err.detail || 'Upload failed');
       }
 
-      const result: UploadResult = await response.json();
+      await response.json();
       onUploadSuccess();
       onClose();
     } catch (err) {
