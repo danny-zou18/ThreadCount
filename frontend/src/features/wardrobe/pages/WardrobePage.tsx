@@ -122,11 +122,7 @@ export function WardrobePage() {
             title="My Wardrobe"
           />
           <div className="flex gap-3 self-start xl:mb-6">
-            <Button
-              onClick={() => setIsUploadOutfitModalOpen(true)}
-              size="lg"
-              variant="secondary"
-            >
+            <Button onClick={() => setIsUploadOutfitModalOpen(true)} size="lg" variant="secondary">
               Add Outfit
             </Button>
             <Button onClick={() => setIsUploadModalOpen(true)} size="lg">
@@ -309,7 +305,10 @@ export function WardrobePage() {
                       <img
                         alt={outfit.name || 'Outfit'}
                         className="max-h-full max-w-full object-contain"
-                        src={supabase.storage.from('generated').getPublicUrl(outfit.thumbnail_path).publicUrl}
+                        src={
+                          supabase.storage.from('generated').getPublicUrl(outfit.thumbnail_path)
+                            .data.publicUrl
+                        }
                       />
                     ) : (
                       <span className="text-[10px] uppercase tracking-[0.24em] text-[var(--text-muted)]">

@@ -82,7 +82,9 @@ export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOu
     e.preventDefault();
     if (!selectedFile) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       setError('You must be logged in');
       return;
@@ -92,7 +94,9 @@ export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOu
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       if (!token) {
@@ -248,7 +252,8 @@ export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOu
             <div className="border border-[var(--border)] bg-[var(--bg-elevated)] p-4">
               <p className="eyebrow text-[var(--text-muted)]">About uploads</p>
               <p className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                Upload complete outfit photos directly. These will appear alongside your composed outfits in the archive.
+                Upload complete outfit photos directly. These will appear alongside your composed
+                outfits in the archive.
               </p>
             </div>
           </section>
@@ -258,11 +263,7 @@ export function UploadOutfitModal({ isOpen, onClose, onUploadSuccess }: UploadOu
           <Button className="sm:min-w-36" onClick={handleClose} type="button" variant="secondary">
             Cancel
           </Button>
-          <Button
-            className="sm:min-w-36"
-            disabled={!selectedFile || isUploading}
-            type="submit"
-          >
+          <Button className="sm:min-w-36" disabled={!selectedFile || isUploading} type="submit">
             {isUploading ? 'Uploading...' : 'Add Outfit'}
           </Button>
         </div>

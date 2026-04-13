@@ -205,20 +205,15 @@ export function DashboardPage() {
               Continue into the wardrobe
             </p>
             <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
-              Use the wardrobe to manage garments or move into the builder to start composing the next silhouette.
+              Use the wardrobe to manage garments or move into the builder to start composing the
+              next silhouette.
             </p>
             <div className="mt-6 space-y-3">
-
-              <Button
-                size="sm"
-                onClick={() => navigate('/wardrobe')}
-                className="w-full"
-              >
+              <Button size="sm" onClick={() => navigate('/wardrobe')} className="w-full">
                 Continue to Wardrobe
               </Button>
             </div>
           </Card>
-
         </aside>
       </div>
     </div>
