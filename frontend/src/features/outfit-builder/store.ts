@@ -290,7 +290,7 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
           }
         }
       } catch (thumbnailError) {
-        logger.warn('Failed to generate thumbnail:', thumbnailError);
+        console.warn('Failed to generate thumbnail:', thumbnailError);
       }
 
       await get().fetchOutfits();
@@ -444,11 +444,7 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     set({ isGeneratingTryOn: true, tryOnError: null, generatedImage: null });
 
     try {
-      const result = await api.generateTryOn(
-        user.id,
-        itemIds,
-        currentOutfit?.id,
-      );
+      const result = await api.generateTryOn(user.id, itemIds, currentOutfit?.id);
       set({ generatedImage: result, isGeneratingTryOn: false });
     } catch (error) {
       set({

@@ -108,7 +108,7 @@ function NavItem({ children, to }: NavItemProps) {
           'text-[11px] uppercase tracking-[0.24em] transition-all',
           isActive
             ? 'text-[var(--text-primary)] font-semibold opacity-100 !underline underline-offset-4'
-            : 'text-[var(--text-secondary)] opacity-70 hover:opacity-100'
+            : 'text-[var(--text-secondary)] opacity-70 hover:opacity-100',
         )
       }
     >
