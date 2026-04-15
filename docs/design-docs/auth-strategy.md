@@ -1,17 +1,15 @@
 # Design Decision: Authentication Strategy
 
-**Status**: Planned
-**Last Updated**: 2026-02-12
+**Status**: Needs Update
+**Last Updated**: 2026-04-15
 
 ## Problem Statement
 
 Seamless needs user authentication for account creation, login, and protecting routes. Users should be able to sign up with email/password and potentially OAuth providers later.
 
-## Decision
+## Original Decision (Not Implemented)
 
 Use Supabase Auth through the FastAPI backend. The frontend never talks to Supabase directly.
-
-## Flow
 
 ```
 1. User enters credentials in frontend
@@ -23,29 +21,53 @@ Use Supabase Auth through the FastAPI backend. The frontend never talks to Supab
 7. FastAPI validates token on each request
 ```
 
-## Rationale
+## Actual Implementation
 
-- **Backend mediates all auth**: No Supabase SDK on frontend. Backend controls auth flow, can add custom logic (rate limiting, audit logging, custom validation)
-- **JWT tokens**: Stateless authentication, works well with React SPA
-- **Supabase Auth**: Battle-tested auth with email/password, OAuth support, and Postgres integration
+**The frontend talks to Supabase directly using the `@supabase/supabase-js` client.**
+
+```
+1. User enters credentials in frontend
+2. Frontend uses Supabase client directly: supabase.auth.signInWithPassword() or signUp()
+3. Supabase returns session with access token + refresh token
+4. Frontend stores session in localStorage via Supabase SDK
+5. Frontend includes Supabase token in requests to backend
+6. Backend validates token via Supabase (or uses service role for admin operations)
+```
+
+## Rationale for Current Implementation
+
+- **Simpler setup**: Direct Supabase SDK avoids backend auth endpoint development
+- **Supabase handles token refresh**: SDK automatically refreshes tokens
+- **OAuth is easier**: Google OAuth works out of the box with Supabase SDK
+
+## Why Original Design Wasn't Followed
+
+- Backend auth endpoints were never implemented
+- Google OAuth was easier to implement with direct Supabase SDK
 
 ## Frontend Responsibilities
 
-- Store auth tokens securely
-- Attach tokens to API requests via shared HTTP client
+- Use Supabase client from `src/shared/api/supabase.ts`
+- Store auth tokens via Supabase SDK (localStorage)
+- Attach Supabase session token to backend API requests via shared HTTP client
 - Redirect to login on 401 responses
 - Protect routes with `ProtectedRoute` component
-- Manage auth state in Zustand store
-
-## Alternatives Considered
-
-1. **Supabase SDK directly in frontend**: Rejected — bypasses backend, harder to add custom logic
-2. **Session-based auth (cookies only)**: Rejected — more complex with SPA, CSRF concerns
-3. **Third-party auth service (Auth0)**: Rejected — additional cost, vendor lock-in when Supabase already provides auth
+- Manage auth state in Zustand store (`src/features/auth/store.ts`)
 
 ## Implementation Notes
 
 - Auth store: `src/features/auth/store.ts`
 - API layer: `src/features/auth/api.ts`
 - Protected route: `src/features/auth/components/ProtectedRoute.tsx`
-- Token refresh: Handle in shared API client interceptor
+- Supabase client: `src/shared/api/supabase.ts`
+- Token refresh: Handled automatically by Supabase SDK
+
+## Alternative: Restore Original Design
+
+If the original design is preferred, the backend would need:
+- `POST /auth/login` - proxy to Supabase
+- `POST /auth/signup` - proxy to Supabase
+- `POST /auth/refresh` - handle token refresh
+- `POST /auth/logout` - handle logout
+
+Frontend would remove direct Supabase client usage.

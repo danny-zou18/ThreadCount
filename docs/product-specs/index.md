@@ -17,7 +17,7 @@
 | P0       | User Authentication       | Completed   |
 | P0       | Onboarding & User Profile | In Progress |
 | P0       | Virtual Wardrobe          | In Progress |
-| P1       | Outfit Builder & Try-On   | Planned     |
+| P1       | Outfit Builder & Try-On   | In Progress |
 | P2       | Style Analysis            | Planned     |
 
 ## Feature Progress Summary
@@ -46,7 +46,7 @@
 - ⏳ Item deletion
 - ⏳ Color/season assignment
 
-### Outfit Builder ⏳ Planned
+### Outfit Builder 🔄 In Progress
 - Canvas for assembling outfits
 - AI try-on generation
 - Save to Previous Looks

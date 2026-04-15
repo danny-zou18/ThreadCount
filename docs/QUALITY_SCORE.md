@@ -251,3 +251,9 @@ lighthouse http://localhost:5173 --view
 - TypeScript strict mode enabled
 - File size limit: 300 lines (enforced via linter)
 - Import path aliases configured (`@/` for `src/`)
+
+### Pre-commit Hooks
+
+- Husky v9 + lint-staged configured
+- Pre-commit hook runs: lint-staged, typecheck, vitest
+- Lint-staged runs: eslint --fix, prettier --write on .ts/.tsx files

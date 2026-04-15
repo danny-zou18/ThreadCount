@@ -1,7 +1,7 @@
 # Frontend Guide
 
-**Version**: 1.3.0
-**Last Updated**: 2026-03-24
+**Version**: 1.4.0
+**Last Updated**: 2026-04-15
 
 ## Setup & Development
 
@@ -67,6 +67,7 @@ The development server will start at `http://localhost:5173`.
 | `npm run lint` | Run ESLint |
 | `npm run lint:fix` | Auto-fix lint errors |
 | `npm run format` | Format with Prettier |
+| `npm run format:check` | Check formatting without changes |
 | `npm run test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once |
 | `npm run test:coverage` | Run tests with coverage |
@@ -104,11 +105,12 @@ VITE_API_URL=http://localhost:8000
 
 ## Implemented Feature Domains
 
-- `auth`: login, signup, session bootstrap, protected routes.
-- `onboarding`: protected onboarding flow.
-- `dashboard`: protected landing area after auth.
-- `wardrobe`: wardrobe management UI.
-- `outfit-builder`: outfit composition UI.
+- `auth`: login, signup, session bootstrap, protected routes. Full layer structure (types, api, store, components, pages).
+- `onboarding`: protected onboarding flow. Contains only components and pages.
+- `dashboard`: protected landing area after auth. Contains only pages.
+- `wardrobe`: wardrobe management UI. Full layer structure (types, api, store, components, pages).
+- `outfit-builder`: outfit composition UI. Full layer structure (types, api, store, components, pages).
+- `profile`: API types for profile data. Not wired into router.
 
 ## Present But Not Routed
 
@@ -121,6 +123,8 @@ Within a feature, dependencies flow forward only:
 ```text
 Types -> API -> Stores -> Components -> Pages
 ```
+
+**Note**: Not all features follow the full layer structure. Refer to "Implemented Feature Domains" above for details.
 
 Rules:
 
@@ -180,6 +184,17 @@ These are referenced as placeholders in `frontend/src/routes/index.tsx` but are 
 - Co-locate tests with the unit under test.
 - Prefer behavior-focused assertions.
 - Mock external APIs over component internals.
+
+### Test Coverage
+
+| Feature | Test Files |
+| ------- | ----------- |
+| auth | LoginForm.test.tsx, SignupForm.test.tsx |
+| outfit-builder | store.test.ts, OutfitCanvas.test.tsx, OutfitBuilderPage.test.tsx |
+| shared | Button.test.tsx, AppShell.test.tsx |
+| wardrobe | None |
+| onboarding | None |
+| dashboard | None |
 
 ## References
 

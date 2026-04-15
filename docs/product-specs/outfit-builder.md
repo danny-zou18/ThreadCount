@@ -1,9 +1,9 @@
 # Feature: Outfit Builder & Try-On
 
-**Status**: Planned
+**Status**: In Progress
 **Priority**: P1
 **Domain**: Outfit Builder (`src/features/outfit-builder/`)
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-04-15
 
 ## User Story
 
@@ -13,28 +13,28 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 
 ### Build Outfits
 
-- [ ] Canvas displays garment slots in a flatlay arrangement (top → bottom → shoes, plus optional accessories)
-- [ ] User can add items from wardrobe to canvas slots
-- [ ] Garment images scale dynamically to fit viewport
-- [ ] User can browse wardrobe items per category and select one for each slot
-- [ ] User can remove items from canvas
-- [ ] User can swap items by selecting a different one from the same category
+- [x] Canvas displays garment slots in a flatlay arrangement (top → bottom → shoes, plus optional accessories)
+- [x] User can add items from wardrobe to canvas slots
+- [x] Garment images scale dynamically to fit viewport
+- [x] User can browse wardrobe items per category and select one for each slot
+- [x] User can remove items from canvas
+- [x] User can swap items by selecting a different one from the same category
 
 ### Generate AI Try-On
 
-- [ ] "Generate" button visible when at least one item is placed on the canvas
-- [ ] User clicks generate to create an AI image of themselves wearing the outfit
-- [ ] Loading state shown during generation (may take 10-30+ seconds)
-- [ ] Generated image displayed alongside the outfit canvas
-- [ ] User can regenerate with the same outfit
+- [x] "Generate" button visible when at least one item is placed on the canvas
+- [x] User clicks generate to create an AI image of themselves wearing the outfit
+- [x] Loading state shown during generation (may take 10-30+ seconds)
+- [x] Generated image displayed alongside the outfit canvas
+- [x] User can regenerate with the same outfit
 
 ### Save & Manage
 
-- [ ] User can name and save an outfit
-- [ ] User can save a generated image to "Previous Looks"
-- [ ] Saved outfits viewable in a gallery
-- [ ] Previous Looks gallery viewable
-- [ ] User can delete saved outfits and previous looks
+- [x] User can name and save an outfit
+- [ ] User can save a generated image to "Previous Looks" (not implemented)
+- [ ] Saved outfits viewable in a gallery (available via wardrobe panel "Saved" tab, but not dedicated page)
+- [ ] Previous Looks gallery viewable (not implemented)
+- [ ] User can delete saved outfits and previous looks (outfits can be deleted, previous looks not implemented)
 
 ### Style-Based Generation
 
@@ -44,15 +44,18 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 
 ## Pages
 
-| Route             | Component         | Description                               |
-| ----------------- | ----------------- | ----------------------------------------- |
-| `/outfit-builder` | OutfitBuilderPage | Canvas + wardrobe panel + generate button |
-| `/outfits`        | SavedOutfitsPage  | Gallery of saved outfits                  |
-| `/previous-looks` | PreviousLooksPage | Gallery of saved AI-generated images      |
+| Route             | Component         | Description                               | Status |
+| ----------------- | ----------------- | ----------------------------------------- | ------ |
+| `/outfit-builder` | OutfitBuilderPage | Canvas + wardrobe panel + generate button | Active |
+| `/outfits`        | SavedOutfitsPage  | Gallery of saved outfits                  | Not wired to router |
+| `/previous-looks` | PreviousLooksPage | Gallery of saved AI-generated images      | Not wired to router |
+
+**Note**: Saved outfits can be viewed in the "Saved" tab of the WardrobePanel in the outfit builder.
 
 ## Design References
 
 - Backend endpoints: `GET /outfits`, `POST /outfits`, `PUT /outfits/:id`, `DELETE /outfits/:id`
+- Backend endpoints: `POST /outfits/generate-thumbnail`, `POST /outfits/upload`
 - Backend endpoints: `POST /try-on/generate`, `GET /try-on/history`, `DELETE /try-on/history/:id`
 - AI generation happens entirely on backend; frontend submits request and polls/waits for result
 
@@ -69,3 +72,4 @@ As a user, I want to combine items from my wardrobe into outfits and generate an
 - Outfit calendar/scheduling — future enhancement
 - Real-time / live try-on — future enhancement
 - Video try-on — future enhancement
+- Style-based AI generation — future enhancement

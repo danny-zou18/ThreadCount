@@ -1,10 +1,13 @@
 # Tech Debt Tracker
 
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-04-13
 
 ## Active Debt
 
-None yet — project is starting fresh.
+| Item                    | Domain  | Priority | Notes                                                   |
+| ----------------------- | ------- | -------- | ------------------------------------------------------- |
+| No backend tests        | Backend | P1       | FastAPI endpoints lack unit tests and integration tests |
+| No pre-commit hooks     | All     | P1       | Add pre-commit hooks for linting and type checking      |
 
 ## Anticipated Debt
 
