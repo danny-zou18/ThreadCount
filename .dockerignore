@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build outputs
+dist
+build
+*.egg-info
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test & Dev
+coverage
+*.log
+.env
+.env.local
+.env.*.local
+
+# Docs (not needed in containers)
+docs
+README.md
+
+# Docker
+docker-compose*.yml
+docker
+Dockerfile*
+.dockerignore
+
+# Supabase
+supabase
