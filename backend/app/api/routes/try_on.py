@@ -111,39 +111,30 @@ async def generate_try_on(request: TryOnRequest):
         logger.info(f"Found {len(items)} clothing items for try-on")
 
         # Get public URLs for clothing items
-        clothing_urls = []
+        all_image_urls = [model_url]  # Start with model canvas
         for item in items:
             image_path = item.get("image_path")
             if image_path:
                 item_url = supabase.storage.from_("wardrobe").get_public_url(image_path)
-                clothing_urls.append(
-                    {
-                        "name": item.get("name", "clothing item"),
-                        "category": item.get("category", "clothing"),
-                        "url": item_url if isinstance(item_url, str) else str(item_url),
-                    }
+                all_image_urls.append(
+                    item_url if isinstance(item_url, str) else str(item_url)
                 )
 
-        if not clothing_urls:
+        if len(all_image_urls) < 2:
             raise HTTPException(
                 status_code=400, detail="No valid clothing images found"
             )
 
-        # Build enhanced prompt with clothing items
-        clothing_descriptions = []
-        for item_info in clothing_urls:
-            clothing_descriptions.append(
-                f"- {item_info['name']} ({item_info['category']})"
-            )
-
-        clothing_list = "\n".join(clothing_descriptions)
+        clothing_list = "\n".join(
+            f"- {item.get('name', 'clothing item')} ({item.get('category', 'clothing')})"
+            for item in items
+        )
         enhanced_prompt = f"{TRY_ON_PROMPT}\n\nClothing items to wear:\n{clothing_list}"
 
         logger.info(f"Calling fal.ai for try-on generation...")
         fal_client = FalClient()
 
-        # For try-on, we use the model canvas as the base and prompt for the clothing
-        generated = fal_client.generate_image(model_url, enhanced_prompt)
+        generated = fal_client.generate_image(all_image_urls, enhanced_prompt)
 
         generated_url = None
         if isinstance(generated, dict):

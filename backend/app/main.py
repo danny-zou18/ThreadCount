@@ -2,7 +2,15 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.api.routes import avatar, wardrobe, image_processing, ai, outfits, try_on
+from app.api.routes import (
+    avatar,
+    wardrobe,
+    image_processing,
+    ai,
+    outfits,
+    try_on,
+    generated_images,
+)
 
 app = FastAPI(title="Seamless API")
 
@@ -36,6 +44,9 @@ app.include_router(
 app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 app.include_router(outfits.router, prefix="/api/outfits", tags=["outfits"])
 app.include_router(try_on.router, prefix="/api/try-on", tags=["try-on"])
+app.include_router(
+    generated_images.router, prefix="/api/generated-images", tags=["generated-images"]
+)
 
 
 @app.get("/health")

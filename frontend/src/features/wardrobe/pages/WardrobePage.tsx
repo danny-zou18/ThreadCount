@@ -13,6 +13,7 @@ import { ColorFilter } from '../components/ColorFilter';
 import { UploadModal } from '../components/UploadModal';
 import { UploadOutfitModal } from '../components/UploadOutfitModal';
 import { EditItemModal } from '../components/EditItemModal';
+import { EditOutfitModal } from '../components/EditOutfitModal';
 import { supabase } from '@/shared/api/supabase';
 import { useAuthStore } from '@/features/auth/store';
 
@@ -42,6 +43,7 @@ export function WardrobePage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isUploadOutfitModalOpen, setIsUploadOutfitModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WardrobeItem | null>(null);
+  const [editingOutfit, setEditingOutfit] = useState<UploadedOutfit | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showColorFilter, setShowColorFilter] = useState(false);
   const [showSeasonFilter, setShowSeasonFilter] = useState(false);
@@ -298,7 +300,8 @@ export function WardrobePage() {
               {uploadedOutfits.map((outfit) => (
                 <div
                   key={outfit.id}
-                  className="group flex flex-col bg-transparent p-2 text-left transition-opacity hover:opacity-100"
+                  className="group flex flex-col bg-transparent p-2 text-left transition-opacity hover:opacity-100 cursor-pointer"
+                  onClick={() => setEditingOutfit(outfit)}
                 >
                   <div className="flex aspect-[0.8] items-center justify-center bg-[color:rgba(244,244,239,0.32)] p-3">
                     {outfit.thumbnail_path ? (
@@ -341,6 +344,12 @@ export function WardrobePage() {
         isOpen={!!editingItem}
         item={editingItem}
         onClose={() => setEditingItem(null)}
+      />
+      <EditOutfitModal
+        isOpen={!!editingOutfit}
+        outfit={editingOutfit}
+        onClose={() => setEditingOutfit(null)}
+        onUpdateSuccess={fetchUploadedOutfits}
       />
     </div>
   );

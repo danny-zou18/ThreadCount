@@ -10,15 +10,17 @@ logger = logging.getLogger(__name__)
 class GeminiClient:
     def __init__(self):
         settings = get_settings()
-        genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-3-flash-preview')
+        genai.configure(api_key=settings.google_api_key)
+        self.model = genai.GenerativeModel("gemini-3-flash-preview")
 
-    async def analyze_clothing_image(self, image_data: bytes, mime_type: str = "image/jpeg") -> Dict[str, Any]:
+    async def analyze_clothing_image(
+        self, image_data: bytes, mime_type: str = "image/jpeg"
+    ) -> Dict[str, Any]:
         """Analyze a clothing image and extract colors, seasons, tags, and suggested category."""
         logger.info("Analyzing clothing image with Gemini...")
-        
-        base64_image = base64.standard_b64encode(image_data).decode('utf-8')
-        
+
+        base64_image = base64.standard_b64encode(image_data).decode("utf-8")
+
         prompt = """Analyze this clothing item image and provide the following information in JSON format:
 
 {
@@ -42,15 +44,12 @@ Rules:
 Return ONLY the JSON object, no other text."""
 
         try:
-            response = await self.model.generate_content_async([
-                {
-                    "mime_type": mime_type,
-                    "data": base64_image
-                },
-                prompt
-            ])
-            
+            response = await self.model.generate_content_async(
+                [{"mime_type": mime_type, "data": base64_image}, prompt]
+            )
+
             import json
+
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text[7:]
@@ -58,36 +57,45 @@ Return ONLY the JSON object, no other text."""
                 text = text[3:]
             if text.endswith("```"):
                 text = text[:-3]
-            
+
             result = json.loads(text.strip())
-            logger.info(f"Analysis complete: {result.get('suggested_name', 'Unknown item')}")
+            logger.info(
+                f"Analysis complete: {result.get('suggested_name', 'Unknown item')}"
+            )
             return result
-            
+
         except Exception as e:
             logger.error(f"Gemini analysis failed: {str(e)}")
             raise Exception(f"Failed to analyze image: {str(e)}")
 
     def validate_category(self, category: str) -> str:
         """Validate and normalize category."""
-        valid_categories = ['tops', 'bottoms', 'dresses', 'shoes', 'accessories', 'outerwear']
+        valid_categories = [
+            "tops",
+            "bottoms",
+            "dresses",
+            "shoes",
+            "accessories",
+            "outerwear",
+        ]
         category_lower = category.lower().strip()
-        
+
         for valid in valid_categories:
             if valid in category_lower or category_lower in valid:
                 return valid
-        
-        return 'tops'
+
+        return "tops"
 
     def validate_seasons(self, seasons: List[str]) -> List[str]:
         """Validate and normalize seasons."""
-        valid_seasons = ['spring', 'summer', 'fall', 'winter']
+        valid_seasons = ["spring", "summer", "fall", "winter"]
         result = []
-        
+
         for season in seasons:
             season_lower = season.lower().strip()
             for valid in valid_seasons:
                 if valid in season_lower or season_lower in valid:
                     if valid not in result:
                         result.append(valid)
-        
-        return result if result else ['spring', 'summer', 'fall', 'winter']
+
+        return result if result else ["spring", "summer", "fall", "winter"]
