@@ -7,6 +7,7 @@ import { useAuthStore } from '@/features/auth/store';
 const primaryLinks = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Wardrobe', to: '/wardrobe' },
+  { label: 'Looks', to: '/looks' },
   { label: 'Builder', to: '/outfit-builder' },
 ];
 

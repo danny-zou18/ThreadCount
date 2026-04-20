@@ -6,6 +6,7 @@ import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { WardrobePage } from '@/features/wardrobe/pages/WardrobePage';
 import { OutfitBuilderPage } from '@/features/outfit-builder/pages/OutfitBuilderPage';
+import { LooksPage } from '@/features/looks/pages/LooksPage';
 import { AppShell } from '@/shared/layout/AppShell';
 
 export function AppRoutes() {
@@ -21,6 +22,7 @@ export function AppRoutes() {
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/wardrobe" element={<WardrobePage />} />
+          <Route path="/looks" element={<LooksPage />} />
           <Route path="/outfit-builder" element={<OutfitBuilderPage />} />
 
           {/* Placeholder routes — add pages as domains are built */}
