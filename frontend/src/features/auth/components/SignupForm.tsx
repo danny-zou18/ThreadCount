@@ -43,8 +43,8 @@ export function SignupForm() {
     <div className="space-y-6 text-[var(--text-inverse)]">
       <Button
         type="button"
-        variant="secondary"
-        className="w-full border-[rgba(255,255,255,0.32)] text-[var(--text-inverse)] hover:border-[var(--text-inverse)] hover:bg-[var(--text-inverse)] hover:text-[var(--surface-inverse)]"
+        variant="primary"
+        className="w-full border border-[var(--border)] bg-[var(--text-primary)] text-[var(--text-inverse)]"
         onClick={handleGoogleSignup}
         disabled={isLoading}
       >

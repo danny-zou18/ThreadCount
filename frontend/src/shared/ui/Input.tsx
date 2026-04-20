@@ -29,12 +29,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={clsx(
-            'w-full border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)]',
+            'w-full border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3 text-sm',
             'placeholder:text-[var(--text-muted)]',
             'focus:outline-none focus:border-[var(--border-strong)] focus:ring-1 focus:ring-[var(--border-strong)]',
             'disabled:opacity-40 disabled:cursor-not-allowed',
             'transition-colors duration-200',
             error && 'border-[var(--border-strong)] focus:border-[var(--border-strong)]',
+            !props.value && !props.defaultValue && 'text-[var(--text-primary)]',
             className,
           )}
           aria-invalid={error ? 'true' : undefined}
