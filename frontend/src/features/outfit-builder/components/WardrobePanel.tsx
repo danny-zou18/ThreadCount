@@ -19,6 +19,8 @@ import {
 import { ReplaceModal } from './panel/ReplaceModal';
 import type { Category } from '@/features/wardrobe/types';
 
+type RailTab = 'saved' | MainCategory;
+
 /**
  * Wardrobe panel — the right-side selection rail in the outfit builder.
  *
@@ -66,7 +68,8 @@ export function WardrobePanel({
 
   const slotTab = selectedSlot ? SLOT_TO_MAIN[selectedSlot] : null;
   const activeTab = slotTab ?? selectedTab;
-  const effectiveMain = activeTab && activeTab !== 'saved' ? activeTab : null;
+  const effectiveMain: MainCategory | null =
+    activeTab && activeTab !== 'saved' ? (activeTab as MainCategory) : null;
   const activeSelectedSub = selectedSlot ? null : selectedSub;
   const subCategories = effectiveMain ? SUB_CATEGORIES[effectiveMain] : [];
 

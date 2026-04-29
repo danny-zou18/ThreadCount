@@ -37,13 +37,9 @@ export function LooksPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageIntro
+        eyebrow="Your Gallery"
         title="Previous Looks"
         description="Browse your saved outfits and AI-generated renders"
-        metrics={[
-          { label: 'Saved Outfits', value: String(savedCount) },
-          { label: 'Renders', value: String(renderedCount) },
-          { label: 'Total', value: String(looks.length) },
-        ]}
       />
 
       {error && (
