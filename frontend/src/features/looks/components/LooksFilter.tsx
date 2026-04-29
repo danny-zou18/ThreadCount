@@ -1,6 +1,13 @@
 import type { LookFilter, Look } from '../types';
 import { LOOK_FILTERS } from '../types';
 
+/**
+ * Sticky filter bar for the looks page.
+ * Shows three tabs (All, Saved Outfits, Renders) with count badges.
+ * Filter changes are client-side — no API refetch occurs.
+ * Counts are derived from the full `looks` array passed as a prop.
+ */
+
 interface LooksFilterProps {
   filter: LookFilter;
   onFilterChange: (filter: LookFilter) => void;

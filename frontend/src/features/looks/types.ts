@@ -1,7 +1,25 @@
+/**
+ * Looks feature types.
+ *
+ * A "look" is a union type representing either a user-uploaded outfit photo
+ * (SavedOutfit) or an AI-generated try-on render (GeneratedImage). The `type`
+ * discriminant field enables type-safe handling in components and API calls.
+ *
+ * These types come from two separate backend data sources:
+ * - `outfits` table (where `item_ids` is empty and `thumbnail_path` is populated)
+ * - `generated_images` table (AI try-on results)
+ *
+ * See docs/features/previous-looks/design.md § Data Aggregation Strategy.
+ */
+
 export type LookType = 'saved' | 'rendered';
 
 export type LookFilter = 'all' | LookType;
 
+/**
+ * User-uploaded outfit photo. Distinguished from composed outfits by
+ * having empty `item_ids` and a populated `thumbnail_path`.
+ */
 export interface SavedOutfit {
   id: string;
   user_id: string;
@@ -12,6 +30,11 @@ export interface SavedOutfit {
   type: 'saved';
 }
 
+/**
+ * AI-generated try-on image from the `generated_images` table.
+ * `image_url` is the public URL in the `generated` Supabase bucket.
+ * `outfit_id` links back to the outfit that was used for generation (optional).
+ */
 export interface GeneratedImage {
   id: string;
   user_id: string;

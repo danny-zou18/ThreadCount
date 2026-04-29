@@ -12,7 +12,7 @@ These are the foundational principles that guide all decisions in the Seamless f
 **Implications**:
 
 - All design decisions documented in `docs/design-docs/`
-- All feature requirements in `docs/product-specs/`
+- All feature requirements in `docs/features/`
 - No critical context lives in Slack, Google Docs, or anyone's head
 
 ## 2. Parse at Boundaries

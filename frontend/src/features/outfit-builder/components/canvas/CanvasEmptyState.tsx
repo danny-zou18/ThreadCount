@@ -1,3 +1,8 @@
+/**
+ * Placeholder content for empty canvas slots.
+ * Shows a short `hint` (e.g. "Layer zone") and a descriptive `title`
+ * guiding the user on what type of garment to place here.
+ */
 interface CanvasEmptyStateProps {
   hint: string;
   title: string;

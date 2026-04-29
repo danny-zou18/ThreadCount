@@ -5,6 +5,20 @@ import { Input } from '@/shared/ui/Input';
 import { WardrobeModalFrame } from './WardrobeModalFrame';
 import { supabase } from '@/shared/api/supabase';
 
+/**
+ * Upload modal for complete outfit photos.
+ *
+ * Unlike UploadModal (which uses the wardrobe store and API module),
+ * this component calls POST /api/outfits/upload directly with a manually
+ * constructed FormData. The outfit upload endpoint is separate from the
+ * wardrobe item creation flow — it stores the image in the `generated`
+ * bucket and creates an outfit record with empty `item_ids`.
+ *
+ * This component fetches the auth token inline rather than going through
+ * the shared `getAuthToken` helper because the wardrobe API module
+ * doesn't export an outfit upload function.
+ */
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 interface UploadOutfitModalProps {

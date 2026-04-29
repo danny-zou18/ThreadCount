@@ -8,6 +8,24 @@ import { SaveOutfitModal } from '../components/builder/SaveOutfitModal';
 import { Button } from '@/shared/ui/Button';
 import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 
+/**
+ * Outfit builder page — the viewport-locked composition workspace.
+ *
+ * This page operates inside a constrained shell (`.builder-shell`) defined by
+ * shared CSS tokens (`--header-h`, `--controls-h`, `--canvas-h`). The layout
+ * must fit within 100dvh without document scrolling; only internal panels scroll.
+ *
+ * Layout structure:
+ * - `.builder-canvas-row`: the main workspace (canvas + wardrobe panel side by side)
+ * - `.builder-controls`: fixed bottom action row (new/save/try-on buttons)
+ * - `.generated-image-section`: conditionally rendered below the shell when
+ *   a try-on result exists (this section CAN exceed the viewport)
+ *
+ * The page loads data from two stores on mount: outfit builder (saved outfits)
+ * and wardrobe (available items for the selection panel).
+ *
+ * See docs/features/outfit-builder/design.md for the viewport containment decision.
+ */
 export function OutfitBuilderPage() {
   const {
     clearCanvas,

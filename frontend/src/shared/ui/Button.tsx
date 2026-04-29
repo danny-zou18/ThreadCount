@@ -9,6 +9,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
 }
 
+// Variant styles follow the visual-style.md spec:
+// - primary: filled dark button for dominant actions
+// - secondary: outlined with strong border, fills on hover
+// - ghost: minimal, transparent until hovered
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'border border-[var(--border-strong)] bg-[var(--text-primary)] text-[var(--text-inverse)] hover:opacity-80 active:opacity-60',
@@ -24,6 +28,14 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: 'min-h-12 px-7 py-3.5 text-[11px] tracking-[0.28em]',
 };
 
+/**
+ * Shared button component for the Seamless design system.
+ *
+ * Variants map to the three action tiers defined in docs/design-docs/visual-style.md:
+ * primary (dominant), secondary (outlined), ghost (minimal). All sizes use
+ * 11px uppercase type with tight tracking — the utilitarian label style from
+ * the style guide. Square corners are enforced via the absence of rounded-* classes.
+ */
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -36,6 +48,7 @@ export function Button({
     <button
       className={clsx(
         'inline-flex items-center justify-center gap-2 font-medium uppercase transition-all duration-300',
+        // Focus ring uses the --focus token for visible keyboard navigation
         'focus:outline-none focus:ring-2 focus:ring-[var(--focus)] focus:ring-offset-2 focus:ring-offset-[var(--bg)]',
         'disabled:opacity-40 disabled:cursor-not-allowed',
         variantStyles[variant],

@@ -3,9 +3,13 @@ import { supabase } from '@/shared/api/supabase';
 import type { AuthUser, LoginFormData, SignupFormData } from './types';
 import { loginWithEmail, signupWithEmail, loginWithGoogle, logoutUser } from './api';
 
+// Central auth state for the entire app. Components consume this via useAuthStore()
+// selectors — prefer narrow selectors (e.g. `s.isAuthenticated`) to avoid unnecessary re-renders.
 interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  // isInitialized guards against premature redirects. ProtectedRoute and pages wait
+  // for this flag before making routing decisions, preventing a flash to /login on refresh.
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
@@ -14,6 +18,7 @@ interface AuthState {
   loginGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  // Returns an unsubscribe function — call it in useEffect cleanup at app root.
   initialize: () => () => void;
 }
 
@@ -57,6 +62,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  // Always clears local state, even if the API call fails (e.g. network down).
+  // This ensures the user is never stuck in a half-authenticated state.
   logout: async () => {
     try {
       await logoutUser();
@@ -73,7 +80,9 @@ export const useAuthStore = create<AuthState>((set) => ({
    * Call once at app startup. Returns an unsubscribe function.
    */
   initialize: () => {
-    // Listen for auth changes FIRST (catches the OAuth redirect token exchange)
+    // Subscribe to onAuthStateChange FIRST. This catches the OAuth redirect token
+    // exchange that happens when the user returns from Google's consent screen.
+    // The listener fires with a SIGNED_IN event and a valid session.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -89,7 +98,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     });
 
-    // Also check current session (handles page refresh with existing session)
+    // Also check current session immediately. onAuthStateChange doesn't fire for
+    // an existing session on page refresh — getSession() fills that gap so
+    // isInitialized becomes true without waiting for a state change event.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         set({

@@ -4,6 +4,18 @@ import { Input } from '@/shared/ui/Input';
 import { WardrobeModalFrame } from './WardrobeModalFrame';
 import { supabase } from '@/shared/api/supabase';
 
+/**
+ * Edit modal for user-uploaded outfit photos.
+ *
+ * Unlike EditItemModal, this component accesses the `outfits` table directly
+ * via Supabase rather than through the API layer. This is because the wardrobe
+ * feature treats uploaded outfits as a secondary data type — they have no
+ * dedicated REST endpoints for name updates; the generic outfit PUT endpoint
+ * is used via Supabase client instead.
+ *
+ * On delete, the associated image is removed from the `generated` storage bucket
+ * before the database record is deleted to avoid orphaned files.
+ */
 interface UploadedOutfit {
   id: string;
   name: string | null;

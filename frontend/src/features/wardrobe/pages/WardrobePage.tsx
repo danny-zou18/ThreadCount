@@ -17,6 +17,19 @@ import { EditOutfitModal } from '../components/EditOutfitModal';
 import { supabase } from '@/shared/api/supabase';
 import { useAuthStore } from '@/features/auth/store';
 
+/**
+ * Wardrobe page — the primary browse/manage surface for clothing items.
+ *
+ * This page aggregates two data sources that use different access patterns:
+ * - **Wardrobe items**: fetched via the REST API through the wardrobe store
+ *   (server-side filtering, Zod-validated responses).
+ * - **Uploaded outfits**: queried directly against the Supabase `outfits` table
+ *   where `item_ids = '{}'` (an empty array signals an uploaded photo rather
+ *   than a composed outfit). This bypasses the API layer because the outfit
+ *   endpoints don't expose a filter for uploaded-only records.
+ *
+ * See docs/features/virtual-wardrobe/product-spec.md for acceptance criteria.
+ */
 interface UploadedOutfit {
   id: string;
   name: string | null;
@@ -50,6 +63,12 @@ export function WardrobePage() {
   const [uploadedOutfits, setUploadedOutfits] = useState<UploadedOutfit[]>([]);
   const [isLoadingOutfits, setIsLoadingOutfits] = useState(false);
 
+  /**
+   * Fetches user-uploaded outfit photos directly from Supabase.
+   * Filters for `item_ids = '{}'` to distinguish uploaded photos from
+   * composed outfits (which have populated `item_ids` arrays).
+   * Results are ordered by most recent first.
+   */
   const fetchUploadedOutfits = useCallback(async () => {
     if (!user) return;
     setIsLoadingOutfits(true);

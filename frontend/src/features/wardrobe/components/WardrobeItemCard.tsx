@@ -9,6 +9,8 @@ interface WardrobeItemCardProps {
 
 export function WardrobeItemCard({ item, onClick }: WardrobeItemCardProps) {
   const imageUrl = getItemImageUrl(item.image_path);
+  // Show the first AI-detected color and season as compact metadata badges.
+  // These are read-only — users cannot manually override AI-detected values.
   const metadata = [item.colors?.[0], item.seasons?.[0]].filter(Boolean);
 
   return (

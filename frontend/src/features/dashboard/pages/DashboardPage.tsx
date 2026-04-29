@@ -8,6 +8,7 @@ import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 import { getAvatar, processAvatar } from '@/features/profile/api';
 import { supabase } from '@/shared/api/supabase';
 
+// Metric card used in the summary row — keeps metric rendering DRY.
 function DashboardMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="border border-[var(--border)] bg-[var(--bg-elevated)] p-5">
@@ -19,9 +20,14 @@ function DashboardMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
+// Dashboard is the post-onboarding landing page. It fetches the user's avatar record
+// to display the original upload and the AI-processed model canvas side by side.
+// Also provides regeneration and navigation entry points to wardrobe/builder.
 export function DashboardPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  // Avatar shape mirrors the DB record — all fields nullable since a user may not have
+  // completed onboarding or the canvas may still be processing.
   const [avatar, setAvatar] = useState<{
     original_photo_path?: string | null;
     model_canvas_path?: string | null;
@@ -30,6 +36,8 @@ export function DashboardPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // useCallback so the effect and regenerate button share the same fetch logic
+  // without triggering redundant requests.
   const loadAvatar = useCallback(async () => {
     if (!user) return;
     const data = await getAvatar(user.id);
@@ -40,6 +48,8 @@ export function DashboardPage() {
     loadAvatar();
   }, [loadAvatar]);
 
+  // Re-triggers the fal.ai processing pipeline via the backend, then refreshes avatar data.
+  // Used when the user wants a cleaner canvas or after re-uploading a source image.
   const handleRegenerate = async () => {
     if (!user) return;
     setIsGenerating(true);
@@ -54,6 +64,8 @@ export function DashboardPage() {
     }
   };
 
+  // Generates a public URL from a Supabase Storage path. The path is stored in the
+  // avatars table and follows the pattern `{userId}/original.{ext}` or `{userId}/canvas.png`.
   const getAvatarUrl = (path: string) => {
     const { data } = supabase.storage.from('avatars').getPublicUrl(path);
     return data.publicUrl;

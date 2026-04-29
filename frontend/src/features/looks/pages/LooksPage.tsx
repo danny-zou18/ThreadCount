@@ -4,6 +4,18 @@ import type { Look } from '../types';
 import { PageIntro } from '@/shared/ui/PageIntro';
 import { LooksFilter, LooksGrid, LookDetailModal } from '../components';
 
+/**
+ * Previous Looks page — Pinterest-style gallery of saved outfits and AI renders.
+ *
+ * Aggregates two data sources (outfits + generated images) via the looks store,
+ * which fetches both in parallel and normalizes them into a unified Look[] array.
+ * Filtering is client-side via `useMemo` — the full dataset is already loaded.
+ *
+ * Shows metrics (saved count, render count, total) in the page intro,
+ * a sticky filter bar, and a masonry grid of look cards.
+ *
+ * See docs/features/previous-looks/product-spec.md for acceptance criteria.
+ */
 export function LooksPage() {
   const { looks, filter, isLoading, error, fetchLooks, setFilter, deleteLook, clearError } =
     useLooksStore();

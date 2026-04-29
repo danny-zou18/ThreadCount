@@ -9,6 +9,22 @@ import { useAuthStore } from '@/features/auth/store';
 import { WardrobeBadgeList } from './WardrobeBadgeList';
 import { WardrobeModalFrame } from './WardrobeModalFrame';
 
+/**
+ * Upload modal for adding individual wardrobe items.
+ *
+ * Processing pipeline:
+ * 1. User selects/drops an image → local preview via FileReader
+ * 2. Background removal via fal.ai (POST /api/image/remove-background)
+ * 3. AI metadata extraction via Gemini (POST /api/ai/analyze) — runs in parallel,
+ *    non-blocking: if analysis fails, the user can still save with manually entered data
+ * 4. User reviews the processed preview + auto-populated fields, then submits
+ *
+ * Both background removal and analysis operate on the original uploaded file,
+ * not the processed image. The processed image path is stored separately and
+ * passed to `createWardrobeItem` as `imagePath` to avoid a second upload.
+ *
+ * See docs/features/virtual-wardrobe/product-spec.md § Upload Items.
+ */
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -78,7 +94,8 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
       setPreview(bgResult.processedImageUrl);
       setProcessedImagePath(bgResult.storagePath);
 
-      // Try AI analysis, but don't block on it
+      // AI analysis is intentionally non-blocking — if it fails, the user
+      // can still manually fill in name, category, and tags.
       try {
         const analysis = await analyzeImage(file);
 

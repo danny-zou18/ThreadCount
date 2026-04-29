@@ -4,6 +4,9 @@ import { SignupForm } from '../components/SignupForm';
 import { useAuthStore } from '../store';
 import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 
+// Signup page — visually inverted from LoginPage: light panel on the left, dark form on the right.
+// New users always go to /onboarding after signup (no location.state redirect since they
+// haven't attempted any protected routes yet).
 export function SignupPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();

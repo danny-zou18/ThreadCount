@@ -8,6 +8,20 @@ import { CanvasEmptyState } from './canvas/CanvasEmptyState';
 import { CanvasItemFigure } from './canvas/CanvasItemFigure';
 import { CanvasSlotShell } from './canvas/CanvasSlotShell';
 
+/**
+ * Outfit canvas — the central composition area where garments are arranged.
+ *
+ * Renders a fixed 3-column grid: left accessories rail | center column (top/bottom/shoes) | right accessories rail.
+ * The center column uses fixed row proportions (30%/50%/20%) to maintain a consistent
+ * flatlay layout regardless of how many items are placed.
+ *
+ * Multi-item slots (top, accessories) render a single active layer at a time,
+ * with inactive layers shown at reduced opacity behind the active one.
+ * A swap button toggles which layer is visible.
+ *
+ * Accessories support HTML5 drag-and-drop between left and right rails.
+ * The canvas is overflow-hidden to stay within the viewport-locked shell.
+ */
 function getAccessoryPosition(index: number) {
   const positions = [
     { left: '50%', top: '16%' },

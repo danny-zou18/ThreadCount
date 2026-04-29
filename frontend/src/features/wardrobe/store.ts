@@ -3,6 +3,16 @@ import type { WardrobeItem, WardrobeFilters, Category } from './types';
 import * as api from './api';
 import { useAuthStore } from '@/features/auth/store';
 
+/**
+ * Wardrobe state management.
+ *
+ * Filter changes trigger an automatic server-side refetch via `setFilters` → `fetchItems`.
+ * This keeps the store in sync with the backend's filtered result set rather than
+ * maintaining a separate client-side copy of all items.
+ *
+ * Auth is sourced cross-store from `useAuthStore` — the wardrobe store does not
+ * own authentication state, only the user ID it passes to API calls.
+ */
 interface WardrobeState {
   items: WardrobeItem[];
   isLoading: boolean;

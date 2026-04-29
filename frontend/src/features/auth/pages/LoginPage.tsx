@@ -4,11 +4,16 @@ import { LoginForm } from '../components/LoginForm';
 import { useAuthStore } from '../store';
 import { SurfaceMessage } from '@/shared/ui/SurfaceMessage';
 
+// Login page — the two-column layout splits brand messaging (left) from the login form (right).
+// If the user is already authenticated, they're immediately redirected to their intended
+// destination (from location state) or /onboarding by default.
 export function LoginPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ProtectedRoute stashes the original location in state.from before redirecting here.
+  // After login, we send the user back there instead of a hardcoded default.
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/onboarding';
 
   useEffect(() => {

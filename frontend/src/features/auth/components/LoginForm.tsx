@@ -5,9 +5,12 @@ import { Input } from '@/shared/ui/Input';
 import { useAuthStore } from '../store';
 import { LoginSchema } from '../types';
 
+// Handles email/password login with client-side zod validation.
+// Google OAuth redirects the browser away, so its flow is simpler (no field-level errors).
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Field errors are local (not in the store) because they're form-scoped, not app-scoped.
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { login, loginGoogle, isLoading, error, clearError } = useAuthStore();
 
@@ -16,6 +19,7 @@ export function LoginForm() {
     setFieldErrors({});
     clearError();
 
+    // Validate client-side first; only hit the store (and thus Supabase) if the shape is valid.
     const result = LoginSchema.safeParse({ email, password });
 
     if (!result.success) {
@@ -85,6 +89,7 @@ export function LoginForm() {
           disabled={isLoading}
         />
 
+        {/* Store-level error (e.g. invalid credentials from Supabase) — distinct from field-level validation errors */}
         {error && (
           <p
             className="text-[11px] uppercase tracking-[0.18em] text-[var(--text-primary)]"

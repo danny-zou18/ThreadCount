@@ -1,8 +1,24 @@
+/**
+ * Looks API layer — aggregates two data sources into a unified `Look[]` array.
+ *
+ * Data sources:
+ * 1. `fetchSavedOutfits` — GET /api/outfits, filtered client-side for uploaded photos
+ *    (empty `item_ids` + populated `thumbnail_path`)
+ * 2. `fetchGeneratedImages` — GET /api/generated-images, AI try-on results
+ *
+ * Both fetches run in parallel via `Promise.all`. Results are normalized with
+ * a `type` discriminant and sorted by `created_at` descending (newest first).
+ *
+ * Deletion routes to the correct endpoint based on `look.type`:
+ * - 'saved' → DELETE /api/outfits/{id}
+ * - 'rendered' → DELETE /api/generated-images/{id}
+ */
+
 import { z } from 'zod';
 import { supabase } from '@/shared/api/supabase';
 import type { SavedOutfit, GeneratedImage, Look } from './types';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const savedOutfitSchema = z.object({
   id: z.string(),
@@ -82,6 +98,11 @@ export async function fetchGeneratedImages(userId: string): Promise<GeneratedIma
   }));
 }
 
+/**
+ * Fetches and merges both look sources in parallel.
+ * Filters outfits client-side to only include uploaded photos (not composed outfits),
+ * then combines with generated images and sorts newest-first.
+ */
 export async function fetchLooks(userId: string): Promise<Look[]> {
   const [outfits, generatedImages] = await Promise.all([
     fetchSavedOutfits(userId),
@@ -136,6 +157,10 @@ export async function deleteGeneratedImage(imageId: string, userId: string): Pro
   }
 }
 
+/**
+ * Type-aware deletion — routes to the correct backend endpoint
+ * based on whether the look is a saved outfit or a generated image.
+ */
 export async function deleteLook(look: Look, userId: string): Promise<void> {
   if (look.type === 'saved') {
     await deleteOutfit(look.id, userId);

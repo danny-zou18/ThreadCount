@@ -1,6 +1,11 @@
 import type { Look } from '../types';
 import { LookCard } from './LookCard';
 
+/**
+ * Masonry grid layout for displaying looks.
+ * Uses CSS `columns-2/3/4` for responsive masonry without JavaScript.
+ * Empty state guides users to create looks via the Outfit Builder or wardrobe upload.
+ */
 interface LooksGridProps {
   looks: Look[];
   onLookClick: (look: Look) => void;

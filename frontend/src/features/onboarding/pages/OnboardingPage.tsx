@@ -12,9 +12,16 @@ import {
   processAvatar,
 } from '@/features/profile/api';
 
+// Onboarding page orchestrates the avatar creation flow: upload → process → success.
+// This page is protected by ProtectedRoute and is the first stop after auth.
+//
+// It crosses into the profile feature for API calls (uploadAvatarPhoto, createAvatar,
+// processAvatar, updateProfile) because onboarding owns the UX but profile owns the data.
 export function OnboardingPage() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  // Step state drives which UI block is visible. 'processing' is a waiting state while
+  // the backend generates the model canvas via fal.ai.
   const [step, setStep] = useState<'upload' | 'processing' | 'success'>('upload');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -22,6 +29,8 @@ export function OnboardingPage() {
     setUploadError(null);
   };
 
+  // Uploads the photo to Supabase Storage, then creates an avatar record in the DB.
+  // These are two separate calls because storage upload and DB metadata are independent concerns.
   const handleUpload = async (file: File) => {
     if (!user) {
       throw new Error('User not authenticated');
@@ -31,6 +40,8 @@ export function OnboardingPage() {
     await createAvatar(user.id, path);
   };
 
+  // After the photo is uploaded, this kicks off the AI processing pipeline (fal.ai via backend).
+  // On success, marks onboarding as complete in the profile and redirects to the dashboard.
   const handleContinue = async () => {
     if (!user) return;
 
@@ -50,6 +61,8 @@ export function OnboardingPage() {
     }
   };
 
+  // Skip still marks onboarding as done so the user isn't routed back here on next login.
+  // They can set up their avatar later from the dashboard.
   const handleSkip = async () => {
     if (user) {
       await updateProfile(user.id, { onboarding_completed: true });

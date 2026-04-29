@@ -1,6 +1,10 @@
 import { supabase } from '@/shared/api/supabase';
 import type { LoginFormData, SignupFormData, AuthUser } from './types';
 
+// This module is the only place in the auth feature that talks to Supabase Auth directly.
+// All functions normalize Supabase responses into our AuthUser type, so the store layer
+// never needs to know about Supabase's internal response shapes.
+
 /**
  * Sign in with email and password via Supabase Auth.
  */
@@ -45,6 +49,8 @@ export async function loginWithGoogle(): Promise<void> {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
+      // After Google consent, Supabase redirects back here with tokens in the URL hash.
+      // The auth store's onAuthStateChange listener picks up the session from that redirect.
       redirectTo: `${window.location.origin}/onboarding`,
     },
   });

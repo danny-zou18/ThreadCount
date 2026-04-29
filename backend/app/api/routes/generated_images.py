@@ -30,6 +30,8 @@ class GeneratedImageResponse(BaseModel):
 
 
 def _db_to_response(item: dict, supabase) -> GeneratedImageResponse:
+    # Converts database record to API response
+    # Generates public URL from storage path for frontend consumption
     image_path = item.get("image_path")
     image_url = ""
     if image_path:
@@ -49,6 +51,8 @@ def _db_to_response(item: dict, supabase) -> GeneratedImageResponse:
 @router.get("", response_model=list[GeneratedImageResponse])
 async def get_generated_images(user_id: str):
     """Get all generated images for a user."""
+    # Returns user's generated images in reverse chronological order
+    # Used in gallery/history views
     logger.info(f"Fetching generated images for user: {user_id}")
     supabase = get_supabase()
     try:
@@ -68,6 +72,7 @@ async def get_generated_images(user_id: str):
 @router.get("/{image_id}", response_model=GeneratedImageResponse)
 async def get_generated_image(image_id: str, user_id: str):
     """Get a single generated image by ID."""
+    # Fetches specific generated image with user ownership verification
     logger.info(f"Fetching generated image: {image_id}")
     supabase = get_supabase()
     try:
@@ -92,6 +97,8 @@ async def get_generated_image(image_id: str, user_id: str):
 @router.delete("/{image_id}")
 async def delete_generated_image(image_id: str, user_id: str):
     """Delete a generated image."""
+    # Deletes both database record and storage file
+    # Storage deletion failure is non-fatal (logged as warning)
     logger.info(f"Deleting generated image: {image_id}")
     supabase = get_supabase()
     try:

@@ -3,6 +3,12 @@ import type { KeyboardEvent, MouseEvent } from 'react';
 import type { Outfit } from '../types';
 import { getGeneratedImageUrl } from '../api';
 
+/**
+ * Card for a saved outfit in the wardrobe panel's "Saved" tab.
+ * Shows the outfit thumbnail (from the `generated` bucket), item count,
+ * and last-updated date. Supports click-to-load and hover-reveal delete.
+ * The delete button uses `confirm()` as a simple guard against accidental deletion.
+ */
 interface OutfitCardProps {
   outfit: Outfit;
   onDelete: (outfitId: string) => void;

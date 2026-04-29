@@ -1,6 +1,14 @@
 import { type KeyboardEvent, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 
+/**
+ * Reusable shell for each canvas slot (top, bottom, shoes, accessories).
+ *
+ * Handles keyboard accessibility (Enter/Space to select), focus styling,
+ * and visual state (empty vs filled, selected vs unselected).
+ * Empty slots show a subtle crosshatch grid pattern via CSS background gradient
+ * to indicate they're interactive targets.
+ */
 interface CanvasSlotShellProps {
   children?: ReactNode;
   className?: string;

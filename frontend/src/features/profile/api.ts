@@ -1,3 +1,19 @@
+/**
+ * Profile and avatar API layer.
+ *
+ * Avatar processing pipeline:
+ * 1. `uploadAvatarPhoto` — stores the original photo in `avatars/photos` bucket
+ * 2. `createAvatar` — creates the DB record with `model_status: 'pending'`
+ * 3. `processAvatar` — calls POST /api/avatar/generate to trigger fal.ai
+ *    model canvas generation, then fetches the updated record
+ *
+ * The `ensureProfile` helper guarantees a `profiles` row exists before
+ * creating an avatar, since the `avatars` table references `profiles(id)`.
+ *
+ * Avatar deletion is soft (`is_active: false`) to preserve referential integrity
+ * with any generated images that reference the avatar.
+ */
+
 import { supabase } from '@/shared/api/supabase';
 import type { Avatar } from './types';
 
@@ -68,6 +84,12 @@ export async function processAvatar(userId: string): Promise<Avatar> {
   return updatedAvatar;
 }
 
+/**
+ * Ensures a `profiles` row exists for the user. The profiles table uses
+ * the auth user ID as its primary key (not a separate UUID), so this
+ * function creates the row if it doesn't exist — typically needed
+ * immediately after signup before avatar creation.
+ */
 async function ensureProfile(userId: string): Promise<void> {
   const { data: existing, error: fetchError } = await supabase
     .from('profiles')

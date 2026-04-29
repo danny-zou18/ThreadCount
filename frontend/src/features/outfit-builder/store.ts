@@ -1,3 +1,21 @@
+/**
+ * Outfit builder store — manages the canvas composition state, saved outfits,
+ * and AI try-on generation.
+ *
+ * Canvas state is more complex than typical CRUD because:
+ * - "top" and accessory slots support multiple layered items (arrays)
+ * - "bottom" and "shoes" are single-item slots
+ * - Layer visibility is tracked by separate index state (topLayerIndex, etc.)
+ *   that toggles which item in a multi-item slot is rendered on top
+ * - Accessories can be dragged between left and right rails
+ *
+ * The `loadOutfit` action maps a persisted outfit's `item_ids` back into
+ * canvas slots by category, distributing accessories evenly across rails.
+ *
+ * `saveOutfit` performs a two-phase save: first creates/updates the outfit
+ * record, then generates a composite thumbnail asynchronously. Thumbnail
+ * failure is non-blocking — the outfit is still saved.
+ */
 import { create } from 'zustand';
 import type { Outfit, OutfitItem, OutfitCanvasState, OutfitSlot } from './types';
 import * as api from './api';
@@ -83,6 +101,12 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     }
   },
 
+  /**
+   * Appends an item to a slot. For array slots (top, accessoriesLeft/Right),
+   * this adds to the existing items. For single slots (bottom, shoes),
+   * this replaces the current item. Resets the layer index so the newly
+   * added item becomes the active visible layer.
+   */
   addToSlot: (slot: OutfitSlot, item: OutfitItem) => {
     set((state) => {
       if (slot === 'top') {
@@ -113,6 +137,11 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     });
   },
 
+  /**
+   * Replaces the contents of a slot with a single item, discarding any
+   * existing layers. Used when swapping an entire slot rather than adding
+   * a layer on top of existing items.
+   */
   setCanvasItem: (slot: OutfitSlot, item: OutfitItem) => {
     set((state) => {
       if (slot === 'top') {
@@ -170,6 +199,10 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     });
   },
 
+  /**
+   * Moves an accessory between left and right rails via drag-and-drop.
+   * Only cross-rail moves are handled; same-rail reordering is a no-op.
+   */
   moveAccessory: (
     fromSlot: 'accessoriesLeft' | 'accessoriesRight',
     toSlot: 'accessoriesLeft' | 'accessoriesRight',
@@ -236,6 +269,15 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     set({ selectedSlot: slot });
   },
 
+  /**
+   * Persists the current canvas composition as a named outfit.
+   *
+   * Two-phase save:
+   * 1. Create or update the outfit record with name + item_ids
+   * 2. Generate a composite thumbnail (POST /api/outfits/generate-thumbnail)
+   *    and attach it to the outfit. Thumbnail failure is caught and logged
+   *    but does not roll back the outfit save.
+   */
   saveOutfit: async (name: string) => {
     const user = useAuthStore.getState().user;
     if (!user) {
@@ -304,6 +346,14 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     }
   },
 
+  /**
+   * Loads a saved outfit onto the canvas by fetching its wardrobe items
+   * and distributing them into canvas slots by category.
+   *
+   * Accessories are distributed across left/right rails using an alternating
+   * toggle. Tops/dresses/outerwear all go into the `top` array. Only the
+   * first bottom and first shoes item are placed (single-item slots).
+   */
   loadOutfit: async (outfit: Outfit) => {
     const user = useAuthStore.getState().user;
     if (!user) return;
@@ -419,6 +469,12 @@ export const useOutfitBuilderStore = create<OutfitBuilderState>((set, get) => ({
     }
   },
 
+  /**
+   * Generates an AI try-on image from the current canvas composition.
+   * Collects all item IDs from every slot and sends them to POST /api/try-on/generate.
+   * Requires the user to have an avatar with `model_status: "ready"`.
+   * The result is stored in `generatedImage` and rendered below the canvas.
+   */
   generateTryOn: async () => {
     const user = useAuthStore.getState().user;
     if (!user) {

@@ -1,4 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+/**
+ * Unit tests for the outfit builder store.
+ *
+ * Tests focus on canvas manipulation logic (add, remove, swap, clear)
+ * which is the most complex state management in the feature.
+ * The store is tested by directly calling actions on the singleton
+ * and asserting against `getState()` — no rendering required.
+ *
+ * Supabase is mocked globally since store actions that interact with
+ * the backend (saveOutfit, loadOutfit, etc.) are not tested here.
+ */
 import { useOutfitBuilderStore } from './store';
 import type { OutfitItem } from './types';
 import type { Category } from '@/features/wardrobe/types';

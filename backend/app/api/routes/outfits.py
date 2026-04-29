@@ -39,6 +39,7 @@ class GenerateThumbnailRequest(BaseModel):
 
 
 def _db_to_outfit(item: dict) -> Outfit:
+    # Converts database record to Pydantic model
     return Outfit(
         id=item["id"],
         user_id=item["user_id"],
@@ -53,6 +54,7 @@ def _db_to_outfit(item: dict) -> Outfit:
 @router.get("", response_model=List[Outfit])
 async def get_outfits(user_id: str):
     """Get all outfits for a user."""
+    # Returns user's outfits in reverse chronological order
     logger.info(f"Fetching outfits for user: {user_id}")
     supabase = get_supabase()
     try:
@@ -72,6 +74,7 @@ async def get_outfits(user_id: str):
 @router.get("/{outfit_id}", response_model=Outfit)
 async def get_outfit(outfit_id: str, user_id: str):
     """Get a single outfit by ID."""
+    # Verifies user ownership before returning outfit
     logger.info(f"Fetching outfit: {outfit_id}")
     supabase = get_supabase()
     try:
@@ -100,6 +103,7 @@ async def create_outfit(
     item_ids: Optional[str] = Form(None),
 ):
     """Create a new outfit."""
+    # Accepts item_ids as comma-separated string for form submission compatibility
     logger.info(f"Creating outfit for user: {user_id}")
     supabase = get_supabase()
     try:
@@ -135,6 +139,7 @@ async def create_outfit(
 @router.put("/{outfit_id}", response_model=Outfit)
 async def update_outfit(outfit_id: str, user_id: str, updates: OutfitUpdate):
     """Update an outfit."""
+    # Supports partial updates - only provided fields are updated
     logger.info(f"Updating outfit: {outfit_id}")
     supabase = get_supabase()
     try:
@@ -187,6 +192,8 @@ async def delete_outfit(outfit_id: str, user_id: str):
 @router.post("/generate-thumbnail")
 async def generate_outfit_thumbnail(request: GenerateThumbnailRequest):
     """Generate a thumbnail by compositing wardrobe item images."""
+    # Creates visual outfit preview by compositing individual item images
+    # Used for outfit cards in the UI
     logger.info(
         f"Generating thumbnail for user: {request.user_id} with {len(request.item_ids)} items"
     )
@@ -208,6 +215,8 @@ async def upload_outfit_image(
     image: UploadFile = File(...),
 ):
     """Upload an outfit image directly without composing from wardrobe items."""
+    # Alternative to thumbnail generation for pre-made outfit images
+    # Creates outfit record with uploaded image as thumbnail
     logger.info(f"Uploading outfit image for user: {user_id}")
     supabase = get_supabase()
     try:

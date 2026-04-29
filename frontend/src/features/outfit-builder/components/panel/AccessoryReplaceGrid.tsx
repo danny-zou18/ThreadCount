@@ -1,6 +1,11 @@
 import type { OutfitItem } from '../../types';
 import { getItemImageUrl } from '../../api';
 
+/**
+ * Grid of accessories for the replace conflict modal.
+ * Displays items from a single accessory rail so the user can
+ * choose which existing accessory to evict for the new one.
+ */
 interface AccessoryReplaceGridProps {
   items: OutfitItem[];
   onReplace: (index: number) => void;

@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Prompt for virtual try-on image generation
+# Instructs AI to maintain model appearance while adding clothing items
+# Optimized for realistic draping and fit
 TRY_ON_PROMPT = """Role: You are a professional fashion photography and virtual try-on image generator. 
 Objective: Generate a photorealistic image of a model wearing the clothing items described. 
 The model should look natural and the clothing should fit realistically on their body.
@@ -46,6 +49,12 @@ class TryOnRequest(BaseModel):
 
 @router.post("/generate")
 async def generate_try_on(request: TryOnRequest):
+    # Virtual try-on pipeline:
+    # 1. Fetch user's active avatar with ready model canvas
+    # 2. Get clothing item images from wardrobe
+    # 3. Combine model canvas + clothing images for AI generation
+    # 4. Generate try-on image via fal.ai
+    # 5. Store result in generated_images table
     logger.info(f"Generating try-on for user: {request.user_id}")
     supabase = get_supabase()
 
@@ -81,6 +90,7 @@ async def generate_try_on(request: TryOnRequest):
             )
 
         # Get public URL for model canvas
+        # Strip "avatars/" prefix if present to get storage path
         canvas_path = str(model_canvas_path)
         if canvas_path.startswith("avatars/"):
             canvas_path = canvas_path[8:]
@@ -110,7 +120,8 @@ async def generate_try_on(request: TryOnRequest):
         items = items_result.data
         logger.info(f"Found {len(items)} clothing items for try-on")
 
-        # Get public URLs for clothing items
+        # Build image URL array: model canvas first, then clothing items
+        # fal.ai uses first image as base, subsequent images as references
         all_image_urls = [model_url]  # Start with model canvas
         for item in items:
             image_path = item.get("image_path")
@@ -125,6 +136,7 @@ async def generate_try_on(request: TryOnRequest):
                 status_code=400, detail="No valid clothing images found"
             )
 
+        # Enhance prompt with specific clothing item details
         clothing_list = "\n".join(
             f"- {item.get('name', 'clothing item')} ({item.get('category', 'clothing')})"
             for item in items
@@ -144,7 +156,7 @@ async def generate_try_on(request: TryOnRequest):
             logger.error("fal.ai response did not contain an image URL")
             raise Exception("Try-on generation failed - no URL in response")
 
-        # Download and upload to Supabase
+        # Download generated image and store permanently
         logger.info(f"Downloading generated image from: {generated_url}")
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.get(generated_url)
@@ -166,6 +178,7 @@ async def generate_try_on(request: TryOnRequest):
             supabase.storage.from_("generated").upload(file_path, response.content)
 
         # Insert record into generated_images table
+        # Stores prompt for future reference and debugging
         image_record = (
             supabase.table("generated_images")
             .insert(

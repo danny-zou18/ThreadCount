@@ -1,6 +1,14 @@
 import { type ReactNode, useEffect, useId } from 'react';
 import { clsx } from 'clsx';
 
+/**
+ * Shared modal frame for all wardrobe modals (upload, edit, upload outfit).
+ *
+ * Provides consistent layout, keyboard handling (Escape to close),
+ * backdrop click-to-dismiss, and ARIA attributes. The `title` and `description`
+ * props are wired to `aria-labelledby` and `aria-describedby` respectively.
+ * Content is scrollable when it exceeds 92vh.
+ */
 interface WardrobeModalFrameProps {
   children: ReactNode;
   className?: string;

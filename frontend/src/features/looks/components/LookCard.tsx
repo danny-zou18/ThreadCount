@@ -1,6 +1,16 @@
 import type { Look } from '../types';
 import * as api from '../api';
 
+/**
+ * Individual look card in the masonry grid.
+ *
+ * Image source depends on look type:
+ * - 'saved': uses `getOutfitImageUrl(thumbnail_path)` from the `generated` bucket
+ * - 'rendered': uses `image_url` directly (already a full URL)
+ *
+ * The hover overlay shows name, date, and a type badge (Saved/Render).
+ * Uses `break-inside-avoid` for CSS columns masonry layout.
+ */
 interface LookCardProps {
   look: Look;
   onClick: () => void;

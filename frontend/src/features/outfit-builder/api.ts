@@ -1,3 +1,15 @@
+/**
+ * Outfit builder API layer.
+ *
+ * Outfit CRUD operations (fetch, create, update, delete) go through Supabase
+ * directly against the `outfits` table. This is because outfits are a simple
+ * data model with no server-side processing required for basic operations.
+ *
+ * Try-on generation and thumbnail creation use the REST API (POST /api/try-on/generate
+ * and POST /api/outfits/generate-thumbnail) because they require backend AI services
+ * and return URLs to generated images in the `generated` Supabase bucket.
+ */
+
 import { supabase } from '@/shared/api/supabase';
 import type { Outfit, OutfitCreateInput, OutfitUpdateInput } from './types';
 
@@ -87,6 +99,10 @@ export async function fetchOutfitItems(itemIds: string[]) {
   return data || [];
 }
 
+/**
+ * Public URL for a wardrobe item image in the `wardrobe` bucket.
+ * Used by the canvas and wardrobe panel to render garment imagery.
+ */
 export function getItemImageUrl(path: string | null): string | null {
   if (!path) return null;
   const { data } = supabase.storage.from('wardrobe').getPublicUrl(path);
@@ -100,6 +116,12 @@ export interface TryOnResult {
   image_url: string;
 }
 
+/**
+ * Triggers AI try-on generation. Requires the user to have an avatar
+ * with `model_status: "ready"`. Returns the generated image URL immediately
+ * (synchronous response from the backend). May take 10-30+ seconds.
+ * See docs/references/api-contracts.md § Try-On.
+ */
 export async function generateTryOn(
   userId: string,
   itemIds: string[],
@@ -135,6 +157,10 @@ export async function generateTryOn(
   return response.json();
 }
 
+/**
+ * Public URL for an AI-generated image in the `generated` bucket.
+ * Used for both try-on renders and outfit thumbnails.
+ */
 export function getGeneratedImageUrl(path: string): string {
   const { data } = supabase.storage.from('generated').getPublicUrl(path);
   return data.publicUrl;

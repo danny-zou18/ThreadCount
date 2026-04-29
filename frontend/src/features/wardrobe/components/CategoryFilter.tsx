@@ -1,6 +1,13 @@
 import { clsx } from 'clsx';
 import { CATEGORY_LABELS, type Category } from '../types';
 
+/**
+ * Horizontal category filter bar for the wardrobe page.
+ * Selection is mutually exclusive — choosing a category deselects the previous one.
+ * Changes propagate to the store's `setFilters`, which triggers a server-side refetch.
+ * An "All" button clears the category filter while preserving any active search/color/season filters.
+ */
+
 interface CategoryFilterProps {
   selectedCategory: Category | undefined;
   onCategoryChange: (category: Category | undefined) => void;

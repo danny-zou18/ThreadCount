@@ -7,8 +7,15 @@ import type {
 } from './types';
 import { supabase } from '@/shared/api/supabase';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+/**
+ * Zod schema for runtime validation of API responses at the boundary.
+ * The `as unknown as z.ZodType<WardrobeItem>` cast is needed because
+ * z.object() infers a narrower type (e.g. `category: string`) than
+ * the domain type (`category: Category`). The cast preserves the
+ * validated runtime shape while satisfying TypeScript's structural checks.
+ */
 const wardrobeItemSchema = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -174,6 +181,10 @@ export async function deleteWardrobeItem(itemId: string, userId: string): Promis
   }
 }
 
+/**
+ * Public URL for a wardrobe item image stored in the `wardrobe` Supabase bucket.
+ * Returns null when the item has no image (e.g. a placeholder template item).
+ */
 export function getItemImageUrl(imagePath: string | null): string | null {
   if (!imagePath) return null;
 
@@ -182,6 +193,13 @@ export function getItemImageUrl(imagePath: string | null): string | null {
   return data.publicUrl;
 }
 
+/**
+ * Removes the background from an uploaded clothing image via fal.ai BiRefNet v2.
+ * Returns both a temporary preview URL and the Supabase storage path where
+ * the processed PNG is persisted. The storage path is later passed to
+ * createWardrobeItem as `imagePath` to avoid re-uploading the file.
+ * See docs/features/virtual-wardrobe/product-spec.md § Background Removal.
+ */
 export async function removeBackground(
   userId: string,
   image: File,
@@ -212,6 +230,12 @@ export async function removeBackground(
   };
 }
 
+/**
+ * Result shape from Gemini AI image analysis (POST /api/ai/analyze).
+ * Used to auto-populate name, category, colors, seasons, and tags
+ * during the upload flow. The `confidence` field is available but
+ * currently unused in the UI.
+ */
 export interface AIAnalysisResult {
   suggested_name: string;
   suggested_category: string;

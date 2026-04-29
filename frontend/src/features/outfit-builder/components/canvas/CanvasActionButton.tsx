@@ -1,6 +1,11 @@
 import { type ButtonHTMLAttributes } from 'react';
 import { clsx } from 'clsx';
 
+/**
+ * Overlay action button used on canvas items (remove, swap layer).
+ * Hidden by default (opacity-0) and revealed on parent group hover/focus.
+ * The `compact` variant is used for small accessory items where space is tight.
+ */
 interface CanvasActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   compact?: boolean;
 }

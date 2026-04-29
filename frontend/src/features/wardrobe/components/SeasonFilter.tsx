@@ -1,6 +1,12 @@
 import { clsx } from 'clsx';
 import { SEASONS, SEASON_LABELS, type Season } from '../types';
 
+/**
+ * Multi-select season filter for the wardrobe page.
+ * Like the color filter, selections are additive and matched against
+ * the AI-detected `seasons` array on wardrobe items.
+ */
+
 interface SeasonFilterProps {
   selectedSeasons: Season[];
   onSeasonChange: (seasons: Season[]) => void;

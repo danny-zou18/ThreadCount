@@ -19,7 +19,23 @@ import {
 import { ReplaceModal } from './panel/ReplaceModal';
 import type { Category } from '@/features/wardrobe/types';
 
-type RailTab = MainCategory | 'saved';
+/**
+ * Wardrobe panel — the right-side selection rail in the outfit builder.
+ *
+ * Provides two navigation levels:
+ * 1. Root: "Garments" tab (opens category sub-navigation) and "Saved" tab (saved outfits)
+ * 2. Garments: main category tabs (Tops, Bottoms, Shoes, Accessories) with optional sub-filters
+ *
+ * When the user clicks a canvas slot, `selectedSlot` is set in the store, which
+ * auto-selects the corresponding category tab in this panel via the `SLOT_TO_MAIN` mapping.
+ *
+ * Item selection logic handles three cases:
+ * - Toggle: clicking an item already on the canvas removes it
+ * - Add: clicking an item when the slot has capacity adds it
+ * - Replace: clicking when the slot is full opens a ReplaceModal for conflict resolution
+ *
+ * Accessories are balanced across left/right rails automatically (shorter rail wins).
+ */
 type NavLevel = 'root' | 'garments';
 
 interface WardrobePanelProps {
@@ -96,6 +112,16 @@ export function WardrobePanel({
   const getAccessoryRightIndex = (itemId: string) =>
     canvas.accessoriesRight.findIndex((item) => item.id === itemId);
 
+  /**
+   * Handles item selection from the wardrobe grid.
+   *
+   * Behavior per slot type:
+   * - **top**: toggle if already in canvas; add if under 2 items; prompt replace if at capacity
+   * - **accessories**: toggle if in either rail; auto-balance to shorter rail; prompt replace if at 6 total
+   * - **bottom/shoes**: toggle if same item; prompt replace if slot is occupied by different item
+   *
+   * When a conflict is detected, `pendingItem` is set, which triggers the ReplaceModal.
+   */
   const handleSelectItem = (item: {
     id: string;
     name: string;

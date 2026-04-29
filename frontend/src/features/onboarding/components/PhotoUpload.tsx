@@ -3,6 +3,9 @@ import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 
+// Photo upload is a controlled-presentational component: it owns file selection state and
+// preview generation, but delegates actual upload and navigation to the parent via callbacks.
+// This keeps it reusable if the upload target or post-upload flow changes.
 interface PhotoUploadProps {
   onPhotoSelected?: (file: File) => void;
   onUpload?: (file: File) => Promise<void>;
@@ -21,6 +24,7 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Client-side guardrails before generating the preview — these are UX hints, not security.
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file');
       return;
@@ -42,6 +46,8 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
     reader.readAsDataURL(file);
   };
 
+  // Drag-drop handler: normalizes the dropped file into the same path as the file input.
+  // Uses DataTransfer API to programmatically set the input's files, keeping both codepaths unified.
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
@@ -62,6 +68,8 @@ export function PhotoUpload({ onPhotoSelected, onUpload, onContinue, onSkip }: P
     }
   };
 
+  // Runs the upload callback first (if provided), then signals the parent to proceed.
+  // Error handling here covers upload failures; the parent handles post-upload processing errors.
   const handleContinue = async () => {
     if (!selectedFile) return;
     setIsUploading(true);

@@ -1,6 +1,14 @@
 import { COMMON_COLORS } from '../types';
 import { clsx } from 'clsx';
 
+/**
+ * Multi-select color filter for the wardrobe page.
+ * Color values are matched against the AI-detected `colors` array on wardrobe items.
+ * Selection is additive — multiple colors can be active simultaneously,
+ * and the backend returns items matching any of the selected colors.
+ * The hex map below is for UI swatch display only; the API uses color name strings.
+ */
+
 interface ColorFilterProps {
   selectedColors: string[];
   onColorChange: (colors: string[]) => void;

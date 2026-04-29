@@ -9,14 +9,27 @@ import { OutfitBuilderPage } from '@/features/outfit-builder/pages/OutfitBuilder
 import { LooksPage } from '@/features/looks/pages/LooksPage';
 import { AppShell } from '@/shared/layout/AppShell';
 
+/**
+ * Central route configuration.
+ *
+ * Route nesting serves a layout purpose:
+ *   ProtectedRoute (auth guard) → AppShell (header/nav chrome) → pages
+ *
+ * ProtectedRoute checks the auth store and redirects unauthenticated users
+ * to /login. AppShell renders the shared header and an <Outlet> for child routes.
+ *
+ * The outfit-builder route lives inside AppShell but uses a viewport-locked
+ * layout (100dvh, no scroll) — AppShell detects this via the URL and adapts
+ * its header and main area styles. See ARCHITECTURE.md for the full route map.
+ */
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes — no auth required */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* Protected routes */}
+      {/* Protected routes — wrapped by auth guard then layout shell */}
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route path="/onboarding" element={<OnboardingPage />} />
@@ -25,7 +38,7 @@ export function AppRoutes() {
           <Route path="/looks" element={<LooksPage />} />
           <Route path="/outfit-builder" element={<OutfitBuilderPage />} />
 
-          {/* Placeholder routes — add pages as domains are built */}
+          {/* Planned routes — see ARCHITECTURE.md "Planned Route Placeholders" */}
           {/* <Route path="/outfits" element={<SavedOutfitsPage />} /> */}
           {/* <Route path="/previous-looks" element={<PreviousLooksPage />} /> */}
           {/* <Route path="/analysis" element={<AnalysisPage />} /> */}
@@ -36,7 +49,7 @@ export function AppRoutes() {
       {/* Redirect root to login */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Catch-all redirect */}
+      {/* Catch-all redirect — prevents blank pages on unknown paths */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

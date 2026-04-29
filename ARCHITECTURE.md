@@ -108,4 +108,4 @@ These should stay documented as planned until page components and active route e
 
 - `docs/FRONTEND.md`
 - `docs/design-docs/visual-style.md`
-- `docs/product-specs/`
+- `docs/features/`

@@ -1,3 +1,17 @@
+/**
+ * Page-level tests for OutfitBuilderPage.
+ *
+ * Verifies the viewport-locked shell structure:
+ * - `.builder-shell` is the outermost container
+ * - `.builder-canvas-row` holds the canvas and panel
+ * - `.canvas-area` constrains the outfit canvas
+ * - `.builder-controls` is the fixed bottom action row
+ *
+ * Also verifies that data fetching (wardrobe items + saved outfits)
+ * fires on mount.
+ *
+ * See docs/features/outfit-builder/design.md for the shell design decision.
+ */
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
 import { OutfitBuilderPage } from './OutfitBuilderPage';

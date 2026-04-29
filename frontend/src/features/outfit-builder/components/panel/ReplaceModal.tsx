@@ -5,6 +5,15 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { AccessoryReplaceGrid } from './AccessoryReplaceGrid';
 
+/**
+ * Conflict resolution modal shown when a user tries to add an item
+ * to a slot that's already at capacity.
+ *
+ * Three resolution modes:
+ * - **Top replacement**: shows both existing top layers, user picks which to replace
+ * - **Accessory replacement**: shows items in both rails, user picks which to evict
+ * - **Simple replacement**: single confirm button for bottom/shoes slots
+ */
 interface ReplaceModalProps {
   accessoryLeftItems: OutfitItem[];
   accessoryRightItems: OutfitItem[];

@@ -2,6 +2,13 @@ import { useState } from 'react';
 import type { Look } from '../types';
 import * as api from '../api';
 
+/**
+ * Full-size detail view for a look, opened from the grid.
+ *
+ * Shows the look image alongside metadata (type, name, date).
+ * For rendered looks, also displays the generation prompt if available.
+ * Includes a delete flow with inline confirmation to prevent accidental deletion.
+ */
 interface LookDetailModalProps {
   look: Look;
   onClose: () => void;

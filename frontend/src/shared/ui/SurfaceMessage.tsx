@@ -7,6 +7,15 @@ interface SurfaceMessageProps {
   description?: string;
 }
 
+/**
+ * Centered empty-state or status message displayed inside a bordered panel.
+ *
+ * Used for empty wardrobes, loading states, and informational callouts.
+ * Follows the "framed object" card aesthetic from visual-style.md —
+ * a single border with elevated background and no decorative elements.
+ * The optional "kicker" uses the eyebrow typography class for a compact
+ * uppercase label above the main heading.
+ */
 export function SurfaceMessage({ className, kicker, title, description }: SurfaceMessageProps) {
   return (
     <div

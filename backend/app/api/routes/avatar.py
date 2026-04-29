@@ -13,7 +13,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-AVATAR_PROMPT = """Role: You are a professional fashion photography and virtual try-on image generator. Objective: Given a photo of a person, generate a high-quality, neutral modeling image that serves as a reusable canvas for future product visualization (e.g., clothing, accessories). The output must prioritize realism, accurate body proportions, and clean separation between the model and clothing regions. Instructions: Generate a full-body fashion model photo based on the person in the input image. Preserve: Body shape and proportions Skin tone Facial structure (neutral expression) Hair shape and volume (simple, unobstructive styling) Do not stylize the face or body beyond realistic enhancement (no beauty exaggeration). Pose & Composition: Neutral, balanced stance (e.g., slight contrapposto or straight-on). Arms relaxed and positioned to avoid covering torso or hips. Legs visible and unobstructed. Camera angle: eye-level or slightly above. Framing: full body, centered, with margin around the subject. Clothing (Temporary / Placeholder): Dress the model in simple, form-fitting, neutral garments: Solid color (e.g., beige, light gray, muted pink, soft black) No logos, text, patterns, or branding Clothing should clearly define: Torso Waist Hips Legs Avoid excessive layering, accessories, or textures. Clothing must be easy to replace digitally (clean edges, no occlusion). Footwear: Minimal, neutral shoes or barefoot. No dramatic heels or complex straps unless unavoidable. Lighting & Environment: Studio lighting: soft, even, shadow-controlled. Background: plain, light neutral (white, off-white, or light gray). No props, no furniture, no background elements. Image Quality: Ultra-high resolution Sharp focus Realistic skin texture Accurate fabric drape No motion blur, no artistic effects Constraints (Important): No exaggerated fashion poses No dramatic expressions No stylization (editorial, fantasy, cinematic, anime, etc.) No cropping of limbs No body distortion No sexualized posing Final Output Goal: A clean, realistic, full-body model image that functions as a neutral base canvas for future virtual try-on rendering, where tops, bottoms, dresses, shoes, and accessories can be swapped without re-posing or re-lighting the subject."""
+# Detailed prompt for generating neutral fashion model avatars
+# Optimized for virtual try-on: clean background, form-fitting neutral clothing
+# Preserves user's body proportions and facial features for realistic try-on results
+AVATAR_PROMPT = """Role: You are a professional fashion photography and virtual try-on image generator. Objective: Given a photo of a person, generate a high-quality, neutral modeling image that serves as a reusable canvas for future product visualization (e.g., clothing, accessories). The output must prioritize realism, accurate body proportions, and clean separation between the model and clothing regions. Instructions: Generate a full-body fashion model photo based on the person in the input image. Preserve: Body shape and proportions Skin tone Facial structure (neutral expression) Hair shape and volume (simple, unobstructive styling) Do not stylize the face or body beyond realistic enhancement (no beauty exaggeration). Pose & Composition: Neutral, balanced stance (e.g., slight contrapposto or straight-on). Arms relaxed and positioned to avoid covering torso or hips. Legs visible and unobstructed. Camera angle: eye-level or slightly above. Framing: full body, centered, with margin around the subject. Clothing (Temporary / Placeholder): Dress the model in simple, form-fitting, neutral garments: Solid color (e.g., beige, light gray, muted pink, soft black) No logos, text, patterns, or branding Clothing should clearly define: Torso Waist Hips Legs Avoid excessive layering, accessories, or textures. Clothing must be easy to replace digitally (clean edges, no occlusion). Footwear: Minimal, neutral shoes or barefoot. No dramatic heels or complex straps unless unavoidable. Lighting & Environment: Studio lighting: soft, even, shadow-controlled. Background: plain, light neutral (white, off-white, or light gray). No props, no furniture, no background elements. Image Quality: Ultra-high resolution Sharp focus Realistic skin texture Accurate fabric drape No motion blur, no artistic effects Constraints (Important): No exaggerated fashion poses No dramatic expressions No stylization (editorial, fantasy, cinematic, anime, etc.) No cropping of limbs No body distortion No sexualiz... (line truncated to 2000 chars)
 
 
 class GenerateAvatarRequest(BaseModel):
@@ -22,12 +25,18 @@ class GenerateAvatarRequest(BaseModel):
 
 @router.post("/generate")
 async def generate_avatar(request: GenerateAvatarRequest):
+    # Avatar generation pipeline:
+    # 1. Fetch user's active avatar record
+    # 2. Get public URL of original photo
+    # 3. Generate neutral model image via fal.ai
+    # 4. Download and store generated image
+    # 5. Update avatar status to "ready"
     logger.info(f"Generating avatar for user: {request.user_id}")
     supabase = get_supabase()
     avatar_id = None
 
     try:
-        # Get user's latest avatar
+        # Get user's latest active avatar
         result = (
             supabase.table("avatars")
             .select("*")
@@ -57,13 +66,14 @@ async def generate_avatar(request: GenerateAvatarRequest):
             logger.error(f"Avatar record is incomplete for user: {request.user_id}")
             raise HTTPException(status_code=500, detail="Avatar record is incomplete")
 
-        # Update status to processing
+        # Update status to processing to prevent duplicate generation requests
         logger.info(f"Setting avatar {avatar_id} status to processing")
         supabase.table("avatars").update({"model_status": "processing"}).eq(
             "id", avatar_id
         ).execute()
 
         # Get public URL of original photo
+        # Strip "avatars/" prefix if present to get storage path
         photo_path = str(original_photo_path)
         if photo_path.startswith("avatars/"):
             photo_path = photo_path[8:]
@@ -86,7 +96,7 @@ async def generate_avatar(request: GenerateAvatarRequest):
             logger.error("fal.ai response did not contain an image URL")
             raise Exception("fal.ai generation failed - no URL in response")
 
-        # Download and upload to Supabase
+        # Download generated image and upload to Supabase storage
         logger.info(f"Downloading generated image from: {generated_url}")
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.get(generated_url)
@@ -105,7 +115,7 @@ async def generate_avatar(request: GenerateAvatarRequest):
             # Fallback for different SDK version
             supabase.storage.from_("avatars").upload(file_path, response.content)
 
-        # Update avatar record
+        # Update avatar record with model canvas path and ready status
         logger.info(f"Setting avatar {avatar_id} status to ready")
         supabase.table("avatars").update(
             {"model_status": "ready", "model_canvas_path": file_path}
@@ -119,6 +129,7 @@ async def generate_avatar(request: GenerateAvatarRequest):
         error_detail = traceback.format_exc()
         logger.error(f"Error in generate_avatar: {error_detail}")
 
+        # Mark avatar as failed to allow retry
         if avatar_id:
             try:
                 supabase.table("avatars").update({"model_status": "failed"}).eq(

@@ -1,3 +1,14 @@
+/**
+ * Component tests for the OutfitCanvas.
+ *
+ * Verifies:
+ * - The viewport-locked canvas frame renders all 5 empty slot states
+ * - Populated slots render correct items with layer controls
+ * - Fixed slot proportions (30%/50%/20%) are maintained regardless of content
+ *
+ * The canvas section uses `h-full min-h-0 flex-col overflow-hidden` to
+ * participate in the viewport-locked shell layout without causing overflow.
+ */
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

@@ -7,6 +7,15 @@ interface PageIntroProps {
   title: string;
 }
 
+/**
+ * Standard page header block used across all feature pages.
+ *
+ * Follows the "editorial contrast" principle from visual-style.md:
+ * oversized headings (4xl–6xl) paired with a compact uppercase "eyebrow"
+ * label and secondary description text. The `luxury-rule` horizontal
+ * divider at the bottom creates the "stacked sections separated by strong
+ * horizontal rules" layout pattern described in the style guide.
+ */
 export function PageIntro({ className, description, eyebrow, title }: PageIntroProps) {
   return (
     <header className={clsx('space-y-5', className)}>

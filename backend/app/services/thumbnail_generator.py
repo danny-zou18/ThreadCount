@@ -11,16 +11,30 @@ from app.supabase_client import get_supabase
 
 logger = logging.getLogger(__name__)
 
+# Canvas dimensions for outfit thumbnails
+# 400x600 provides good aspect ratio for outfit display
 CANVAS_WIDTH = 400
 CANVAS_HEIGHT = 600
+
+# Layout regions for different clothing categories
+# Center column takes 70% width, positioned at 15% from left
 CENTER_COLUMN_X = int(CANVAS_WIDTH * 0.15)
 CENTER_COLUMN_WIDTH = int(CANVAS_WIDTH * 0.7)
+
+# Vertical regions for different body parts
+# Top region: upper body items (shirts, jackets)
 TOP_REGION_Y = 0
 TOP_REGION_HEIGHT = int(CANVAS_HEIGHT * 0.3)
+
+# Bottom region: pants, skirts (overlaps slightly with top for layering)
 BOTTOM_REGION_Y = int(CANVAS_HEIGHT * 0.25)
 BOTTOM_REGION_HEIGHT = int(CANVAS_HEIGHT * 0.55)
+
+# Shoes region: footwear at bottom
 SHOES_REGION_Y = int(CANVAS_HEIGHT * 0.78)
 SHOES_REGION_HEIGHT = int(CANVAS_HEIGHT * 0.22)
+
+# Accessory dimensions: smaller items on left/right margins
 ACCESSORY_WIDTH = int(CANVAS_WIDTH * 0.2)
 ACCESSORY_HEIGHT = int(CANVAS_HEIGHT * 0.12)
 
@@ -32,6 +46,8 @@ class ThumbnailGenerator:
     async def _load_image(
         self, client: httpx.AsyncClient, url: str
     ) -> Image.Image | None:
+        # Downloads image from Supabase storage URL
+        # Returns RGBA image for transparency support (background-removed items)
         try:
             response = await client.get(url)
             response.raise_for_status()
@@ -43,6 +59,8 @@ class ThumbnailGenerator:
     def _categorize_items(
         self, items: list[dict[str, Any]]
     ) -> dict[str, list[dict[str, Any]]]:
+        # Groups wardrobe items by category for layout positioning
+        # Accessories split between left/right for visual balance
         tops: list[dict[str, Any]] = []
         bottoms: list[dict[str, Any]] = []
         shoes: list[dict[str, Any]] = []
@@ -58,6 +76,7 @@ class ThumbnailGenerator:
             elif category == "shoes":
                 shoes.append(item)
             elif category == "accessories":
+                # Distribute accessories evenly between left and right sides
                 if len(accessories_left) <= len(accessories_right):
                     accessories_left.append(item)
                 else:
@@ -81,6 +100,8 @@ class ThumbnailGenerator:
         max_w: int,
         max_h: int,
     ) -> None:
+        # Loads item image from storage and composites onto canvas
+        # Maintains aspect ratio while fitting within max dimensions
         image_path = item.get("image_path")
         if not image_path:
             return
@@ -93,6 +114,7 @@ class ThumbnailGenerator:
             if not img:
                 return
             img.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+            # Center item within its allocated region
             paste_x = x + (max_w - img.width) // 2
             paste_y = y + (max_h - img.height) // 2
             canvas.paste(img, (paste_x, paste_y), img)
@@ -105,6 +127,8 @@ class ThumbnailGenerator:
         client: httpx.AsyncClient,
         categorized: dict[str, list[dict[str, Any]]],
     ) -> None:
+        # Renders all items onto canvas in correct layer order
+        # Order matters: tops first, then bottoms, shoes, accessories
         for item in categorized["tops"]:
             await self._paste_item(
                 client,
@@ -138,6 +162,7 @@ class ThumbnailGenerator:
                 SHOES_REGION_HEIGHT,
             )
 
+        # Accessories positioned on margins with vertical stacking
         for idx, item in enumerate(categorized["accessories_left"]):
             y_pos = int(CANVAS_HEIGHT * (0.1 + idx * 0.18))
             await self._paste_item(
@@ -159,6 +184,8 @@ class ThumbnailGenerator:
     def _upload_thumbnail(
         self, user_id: str, output: io.BytesIO, thumbnail_id: str
     ) -> str:
+        # Uploads composed thumbnail to Supabase storage
+        # Uses user ID in path for organization and access control
         file_path = f"{user_id}/thumbnails/{thumbnail_id}.png"
         logger.info(f"Uploading thumbnail to: {file_path}")
         try:
@@ -177,6 +204,8 @@ class ThumbnailGenerator:
         return file_path
 
     async def generate(self, user_id: str, item_ids: list[str]) -> dict[str, str]:
+        # Main entry point for thumbnail generation
+        # Validates items, composites images, uploads result
         if not item_ids:
             raise ValueError("No item_ids provided")
 
@@ -193,9 +222,11 @@ class ThumbnailGenerator:
         items = items_result.data
         logger.info(f"Found {len(items)} items for thumbnail")
 
+        # White background canvas for clean outfit presentation
         canvas = Image.new("RGBA", (CANVAS_WIDTH, CANVAS_HEIGHT), (255, 255, 255, 255))
         categorized = self._categorize_items(items)
 
+        # Use httpx for async image loading from Supabase storage
         async with httpx.AsyncClient(timeout=30.0) as client:
             await self._compose_thumbnail(canvas, client, categorized)
 

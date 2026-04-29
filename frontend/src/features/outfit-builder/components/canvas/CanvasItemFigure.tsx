@@ -1,5 +1,11 @@
 import { clsx } from 'clsx';
 
+/**
+ * Renders a single garment image on the canvas.
+ * The `muted` prop applies reduced opacity and slight grayscale to
+ * inactive layers in multi-item slots, creating a visual depth effect.
+ * Images use `object-contain` to preserve aspect ratio within the slot.
+ */
 interface CanvasItemFigureProps {
   alt: string;
   className?: string;

@@ -11,16 +11,22 @@ class GeminiClient:
     def __init__(self):
         settings = get_settings()
         genai.configure(api_key=settings.google_api_key)
+        # Using Gemini 3 Flash Preview for fast clothing analysis
+        # Balances speed and accuracy for real-time metadata extraction
         self.model = genai.GenerativeModel("gemini-3-flash-preview")
 
     async def analyze_clothing_image(
         self, image_data: bytes, mime_type: str = "image/jpeg"
     ) -> Dict[str, Any]:
         """Analyze a clothing image and extract colors, seasons, tags, and suggested category."""
+        # Converts image to base64 for Gemini API consumption
+        # Returns structured metadata for wardrobe organization and search
         logger.info("Analyzing clothing image with Gemini...")
 
         base64_image = base64.standard_b64encode(image_data).decode("utf-8")
 
+        # Prompt designed to extract actionable metadata for fashion app features
+        # Includes category validation, color extraction, and seasonal classification
         prompt = """Analyze this clothing item image and provide the following information in JSON format:
 
 {
@@ -50,6 +56,8 @@ Return ONLY the JSON object, no other text."""
 
             import json
 
+            # Handle markdown code blocks in response
+            # Gemini sometimes wraps JSON in ```json blocks
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text[7:]
@@ -70,6 +78,8 @@ Return ONLY the JSON object, no other text."""
 
     def validate_category(self, category: str) -> str:
         """Validate and normalize category."""
+        # Fuzzy matching handles variations like "Tops" or "top"
+        # Defaults to "tops" for unrecognized categories
         valid_categories = [
             "tops",
             "bottoms",
@@ -88,6 +98,8 @@ Return ONLY the JSON object, no other text."""
 
     def validate_seasons(self, seasons: List[str]) -> List[str]:
         """Validate and normalize seasons."""
+        # Ensures consistent season values across the application
+        # Returns all seasons if none are recognized
         valid_seasons = ["spring", "summer", "fall", "winter"]
         result = []
 

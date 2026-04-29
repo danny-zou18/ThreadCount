@@ -5,6 +5,8 @@ import { Input } from '@/shared/ui/Input';
 import { useAuthStore } from '../store';
 import { SignupSchema } from '../types';
 
+// Signup form with dark (inverse) styling to contrast against the light signup page layout.
+// Structurally mirrors LoginForm but adds confirmPassword and uses SignupSchema for validation.
 export function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +19,7 @@ export function SignupForm() {
     setFieldErrors({});
     clearError();
 
+    // SignupSchema.refine() handles cross-field password-match validation client-side.
     const result = SignupSchema.safeParse({ email, password, confirmPassword });
 
     if (!result.success) {

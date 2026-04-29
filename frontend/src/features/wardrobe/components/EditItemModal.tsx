@@ -7,6 +7,15 @@ import { getItemImageUrl } from '../api';
 import { WardrobeBadgeList } from './WardrobeBadgeList';
 import { WardrobeModalFrame } from './WardrobeModalFrame';
 
+/**
+ * Edit modal for existing wardrobe items.
+ *
+ * Users can modify name, category, and tags. Colors and seasons are displayed
+ * as read-only badges because they are AI-detected metadata — the edit API
+ * accepts them but the UI intentionally prevents manual override to keep
+ * metadata consistent with the Gemini analysis source.
+ * Image replacement is not yet supported (see product-spec § Remaining Work).
+ */
 interface EditItemModalProps {
   isOpen: boolean;
   item: WardrobeItem | null;

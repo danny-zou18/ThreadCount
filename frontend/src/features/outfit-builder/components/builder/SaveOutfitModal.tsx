@@ -3,6 +3,11 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { Input } from '@/shared/ui/Input';
 
+/**
+ * Modal for naming and saving the current outfit composition.
+ * Shown from the "Save look" button in the builder controls row.
+ * The name is optional — defaults to "Untitled Outfit" if left blank.
+ */
 interface SaveOutfitModalProps {
   isSaving: boolean;
   name: string;
